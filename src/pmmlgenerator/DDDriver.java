@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import pmmlgenerator.util.*;
 import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;       
+import static pmmlgenerator.PMMLGenerator.dddriver;
 
 /**
  *
@@ -71,7 +72,11 @@ public class DDDriver {
             df.setDataType(DATATYPE.STRING);
             df.setName(nameGenerator.getDataFieldName("String"));
             df.setDisplayName("Display "  + df.getName() );
-            df.setValue(createValues(categoricalStringValues, DATATYPE.STRING));
+            categoricalStringValues = new IntDuple(2,10);
+            if (nameGenerator.doubleValue()<0.75)
+            {                
+                df.setValue(createValues(categoricalStringValues, DATATYPE.STRING));
+            }
             
             myDfs.add(df);
         }
@@ -105,7 +110,7 @@ public class DDDriver {
             DataField df = new DataField();
             df.setOptype(OPTYPE.ORDINAL);
             df.setDataType(DATATYPE.STRING);
-            df.setName(nameGenerator.getDataFieldName("Integer"));
+            df.setName(nameGenerator.getDataFieldName("String"));
             df.setDisplayName("Display "  + df.getName() );
             df.setValue(createValues(ordinalStringValues, DATATYPE.STRING));
                
@@ -145,6 +150,7 @@ public class DDDriver {
             df.setDataType(DATATYPE.INTEGER);
             df.setName(nameGenerator.getDataFieldName("Integer"));
             df.setDisplayName("Display "  + df.getName() );
+            df.setInterval(createIntervals(continuousIntegerIntervals, DATATYPE.INTEGER));
             df.setValue(createValues(continuousIntegerValues, DATATYPE.INTEGER));
             
             
@@ -164,7 +170,8 @@ public class DDDriver {
             df.setDataType(DATATYPE.FLOAT);
             df.setName(nameGenerator.getDataFieldName("Float"));
             df.setDisplayName("Display "  + df.getName() );
-             df.setValue(createValues(continuousFloatValues, DATATYPE.FLOAT));
+               df.setInterval(createIntervals(continuousFloatIntervals, DATATYPE.FLOAT));
+            df.setValue(createValues(continuousFloatValues, DATATYPE.FLOAT));
                      
             myDfs.add(df);
         }
@@ -183,7 +190,7 @@ public class DDDriver {
             df.setName(nameGenerator.getDataFieldName("Double"));
             df.setDisplayName("Display "  + df.getName() );            
             df.setInterval(createIntervals(continuousDoubleIntervals, DATATYPE.DOUBLE));
-              df.setValue(createValues(continuousDoubleValues, DATATYPE.DOUBLE));
+            df.setValue(createValues(continuousDoubleValues, DATATYPE.DOUBLE));
             
             myDfs.add(df);
         }
@@ -252,6 +259,7 @@ public class DDDriver {
                   throws Exception
     {
         ArrayList<Interval> myList = new ArrayList<Interval>();
+        intervalsDuple.refresh(); // to have more variety across Data Fields
         
         if (intervalsDuple.actualNumber == 0)
          { return myList; }
@@ -259,6 +267,7 @@ public class DDDriver {
         switch(myType)
         {
             case DOUBLE:
+            case FLOAT:
                   ArrayList<Double> dValues = nameGenerator.doubleValues(1+intervalsDuple.actualNumber);                 
                                     
                   for (int i = 0; i<intervalsDuple.actualNumber; i++)
@@ -271,7 +280,21 @@ public class DDDriver {
                   }
                   
                 break;
-                    
+             
+            case INTEGER:
+                  ArrayList<Integer> iValues = nameGenerator.intValues(1+intervalsDuple.actualNumber);                 
+                                    
+                  for (int i = 0; i<intervalsDuple.actualNumber; i++)
+                  {
+                      Interval myInterval = new Interval();  
+                      myInterval.setClosure(nameGenerator.pickOne(closures));
+                      myInterval.setLeftMargin((double)iValues.get(i));
+                      myInterval.setRightMargin((double)iValues.get(i+1));
+                      myList.add(myInterval);
+                  }
+                  
+                break;
+                
             default:
                 break;
         

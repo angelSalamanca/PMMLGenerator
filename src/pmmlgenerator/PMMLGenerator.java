@@ -22,6 +22,8 @@ public class PMMLGenerator {
     public static PMML pmml;
     public static DDDriver dddriver;
     public static Sentence sentence;
+    public static Context context;
+    // public static AttributeConstraintUniverse attributeConstraintUniverse;
 
     
     /**
@@ -31,6 +33,9 @@ public class PMMLGenerator {
         // TODO code application logic here
         pmml = new PMML();
         sentence = new Sentence();
+        Scope pmmlScope = new Scope("", pmml, "PMML");
+        context = new Context(pmmlScope);
+        General.attributeConstraintUniverse = (new ConstraintGenerator()).LoadAttributeConstraints();
         
         // Meaningless header
         buildHeader();
@@ -38,6 +43,8 @@ public class PMMLGenerator {
         
         buildDDDriver();
         buildDataDictionary();
+        buildTransformationDictionary();
+        buildModel();
         
         
         // serialize PMML
@@ -60,8 +67,8 @@ public class PMMLGenerator {
     {
         dddriver = new DDDriver();
         
-        dddriver.categoricalString = new IntDuple(1,20);
-        dddriver.categoricalStringValues = new IntDuple(2,10);
+        dddriver.categoricalString = new IntDuple(0,20);
+       
         
         dddriver.categoricalInteger = new IntDuple(1,10);
         dddriver.categoricalIntegerValues = new IntDuple(0,5);
@@ -108,4 +115,16 @@ public class PMMLGenerator {
         pmml.setDataDictionary(dd);
     }
     
+    public static void buildTransformationDictionary()
+    {
+        // TO DO
+    }
+    
+    public static void buildModel() throws Exception
+    {
+        ModelBuilder modelBuilder = new ModelBuilder(pmml, context);
+        modelBuilder.build();
+        
+        int a =1;
+    }
 }

@@ -32,6 +32,18 @@ public class NameGenerator {
         return sb.toString();
     }
     
+    public String getModelName(String modelFamily)
+    {
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append(modelFamily);
+        sb.append(" ");
+        sb.append(getVarNum());
+                           
+        return sb.toString();
+    }
+    
+    
     private String getVarNum()
     {
         int varNum = randomGenerator.nextInt(99999);
@@ -68,7 +80,7 @@ public class NameGenerator {
         ArrayList<Double> values = new ArrayList<Double>();
         for (int i=0;  i<numValues; i++)
         {
-            values.add((randomGenerator.nextDouble()-0.5)*100);
+            values.add((this.doubleValue()-0.5)*100);
         }
         Collections.sort(values);
         return values;
@@ -80,7 +92,7 @@ public class NameGenerator {
         ArrayList<Float> values = new ArrayList<Float>();
         for (int i=0;  i<numValues; i++)
         {
-            double rNum = (randomGenerator.nextDouble()-0.5)*100;
+            double rNum = (this.doubleValue()-0.5)*100;
             values.add((float)rNum);
         }
         Collections.sort(values);
@@ -93,10 +105,35 @@ public class NameGenerator {
          return words[randomGenerator.nextInt(words.length)];
      }
      
+       public int pickOne(int[] words)
+     {
+         return words[randomGenerator.nextInt(words.length)];
+     }
+     
      public String missingDoubleValue()
      {
-         Double d = 9999*(1+(randomGenerator.nextDouble()-0.5)*100);
+         Double d = 10000 + (randomGenerator.nextInt(1000000)-0.5)/1000;
          return d.toString();
      }
      
+     public int intValue(int a , int b)
+     {
+         Integer i = randomGenerator.nextInt(b-a+1)+a;
+         return i;
+     }
+     
+     public double doubleValue()
+     {         
+         return (double)Math.round(randomGenerator.nextDouble() * 10000000d) / 10000000d;
+     }
+     
+     public Boolean booleanValue()
+     {
+         return randomGenerator.nextBoolean();
+     }
+             
+      public  <T extends Enum<?>> T randomEnum(Class<T> clazz){
+        int x = randomGenerator.nextInt(clazz.getEnumConstants().length);
+        return clazz.getEnumConstants()[x];
+    }
 }

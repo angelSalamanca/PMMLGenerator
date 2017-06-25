@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="file:/D:/Java%20Projects/PMMLGenerator/../../Sync/PMML.Test/MLPOC/pmml-4-2.xsd" uri="xml-resources/jaxb/PMML42/pmml-4-2.xsd"/>
+    <system systemId="file:/D:/Java%20Projects/PMMLGenerator/../../Sync/PMML.Test/MLPOC/pmml-4-2-0.xsd" uri="xml-resources/jaxb/PMML42/pmml-4-2-0.xsd"/>
+    <system systemId="file:/D:/Java%20Projects/PMMLGenerator/../../Sync/PMML.Test/MLPOC/pmml-4-2.mod..xsd" uri="xml-resources/jaxb/PMML42/pmml-4-2.mod..xsd"/>
+    <system systemId="file:/D:/Java%20Projects/PMMLGenerator/../../Sync/PMML.Test/MLPOC/pmml-4-3.mod.xsd" uri="xml-resources/jaxb/PMML43/pmml-4-3.mod.xsd"/>
+</catalog>
