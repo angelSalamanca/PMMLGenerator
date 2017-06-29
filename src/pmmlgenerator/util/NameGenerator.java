@@ -34,6 +34,19 @@ public class NameGenerator {
         return sb.toString();
     }
     
+      public String getDerivedFieldName(String fieldType)
+    {
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append("DerivedField ");
+        sb.append(fieldType);
+        sb.append(" ");
+        sb.append(getVarNum());
+                           
+        return sb.toString();
+    }
+    
+    
     public String getModelName(String modelFamily)
     {
         StringBuilder sb = new StringBuilder();
@@ -187,8 +200,16 @@ public class NameGenerator {
                                 rightBound -=1;
                                 leftBound +=1;                                 
                         }                        
+                        try
+                        {
                         Integer iValue = leftBound + this.intValue(0, rightBound-leftBound);
+                      
                         return String.valueOf(iValue);
+                          }
+                        catch (Exception e)
+                        {
+                            String m = e.getMessage();
+                        }
                     }
                     // Try values
                      v =  df.getValue();
@@ -224,4 +245,20 @@ public class NameGenerator {
                     throw new Exception("getValue");
             }
       }
+      
+        public String getValue(DATATYPE dataType) throws Exception
+        {
+            switch(dataType)
+            {
+                case STRING:
+                    return this.stringValue(4);
+                case INTEGER:
+                    return String.valueOf(this.intValue(-50,50));
+                case FLOAT:
+                case DOUBLE:
+                    return String.valueOf(this.doubleValue(-50,50));
+                default:
+                      throw new Exception("getValue");
+            }
+        }
 }

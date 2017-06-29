@@ -140,5 +140,9 @@ public class TransformationDictionary {
         }
         return this.derivedField;
     }
+    
+      public void setDerivedField(List<DerivedField> value) {
+        this.derivedField  = value;
+    }
 
 }

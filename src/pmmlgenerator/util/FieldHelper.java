@@ -56,11 +56,10 @@ public class FieldHelper {
                 if (derf.getName() == fieldName)
                 {
                     this.theField = derf;
-                    break;
+                    break  containerswitch;
                 }
             }
-            throw new Exception("field not found in PMML");
-               
+            break;   
             default: //MODEL
              // MiningField ?
                 containerClass = container.getClass().getName();
@@ -74,7 +73,12 @@ public class FieldHelper {
                 // TO DO
                 
         }
-                    
+       
+        if (this.theField == null)
+        {
+                throw new Exception("field not found in context");
+        }
+        
         this.castField();
         this.generator = new NameGenerator();
     }
@@ -91,7 +95,8 @@ public class FieldHelper {
                 mField = (MiningField)theField;                
                 break;
             case "DerivedField":
-                derField = (DerivedField)theField;                
+                derField = (DerivedField)theField;      
+                break;
             default:
                 throw new Exception("Unexpected class");
         }
@@ -131,13 +136,14 @@ public class FieldHelper {
     public Boolean isGRMTargetCompatible(MININGFUNCTION modelFunction)    throws Exception
     {
         OPTYPE optype = getOptype();
+        DATATYPE datatype = getDataType();
         
         switch(modelFunction)
         {
             case CLASSIFICATION:
-                    return optype == OPTYPE.CATEGORICAL;
+                    return optype == OPTYPE.CATEGORICAL && this.theClass.equals("DataField") && this.dField.getValue().size()>1;
             case REGRESSION:    
-                    return optype == OPTYPE.CONTINUOUS;
+                    return optype == OPTYPE.CONTINUOUS && (datatype == DATATYPE.DOUBLE || datatype == DATATYPE.FLOAT);
             default:
                 throw new Exception("Unexpected model function");
                 
@@ -165,6 +171,11 @@ public class FieldHelper {
             default:
                 throw new Exception("Unexpected class");
         }
+    }
+    
+    public String retrieveClass()
+    {
+        return this.theClass;
     }
     
     public String randomValue() throws Exception

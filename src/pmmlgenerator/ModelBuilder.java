@@ -366,7 +366,7 @@ public class ModelBuilder {
                 {
                     PCell cell = new PCell();
                     cell.setParameterName("p"+String.valueOf(iPar));
-                    if (this.nameGenerator.doubleValue()>0.8)
+                    if (this.nameGenerator.doubleValue()<0.6)
                     {
                         cell.setBeta(this.nameGenerator.doubleValue());
                     }

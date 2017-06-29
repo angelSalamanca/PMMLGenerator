@@ -193,5 +193,12 @@ public class NormContinuous {
     public void setOutliers(OUTLIERTREATMENTMETHOD value) {
         this.outliers = value;
     }
+    
+     public void saveLinearNorm(LinearNorm lnorm) {
+        if (linearNorm == null) {
+            linearNorm = new ArrayList<LinearNorm>();
+        }
+        linearNorm.add(lnorm);
+    }
 
 }

@@ -18,6 +18,7 @@ public class Scope {
     String name;
     Object PMMLScope;
     String scopeClass;
+    NameGenerator generator;
 
     public Scope(String scopeName, Object PMMLObject, String thisClass)
     {
@@ -25,6 +26,7 @@ public class Scope {
         name = scopeName;
         PMMLScope = PMMLObject;
         scopeClass = thisClass;
+        generator = new NameGenerator();
     }
     
     public void setParent(Scope thisParent)
@@ -42,5 +44,6 @@ public class Scope {
     {
         return parent == null;
     }
+    
     
 }

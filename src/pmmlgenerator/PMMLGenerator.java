@@ -57,11 +57,11 @@ public class PMMLGenerator {
         {
             throw new Exception();
         }
-        
+         System.out.println("PMML file written");
         // generate data
         writer.writeData(pmml, 10, new NameGenerator());
         
-        int a =1;
+        System.out.println("Data file written");
         
         
         
@@ -119,9 +119,11 @@ public class PMMLGenerator {
         pmml.setDataDictionary(dd);
     }
     
-    public static void buildTransformationDictionary()
+    public static void buildTransformationDictionary() throws Exception
     {
-        // TO DO
+        TransformationDictionaryBuilder tdb = new TransformationDictionaryBuilder(pmml, context);
+        pmml.setTransformationDictionary(tdb.build());
+        int a =1; 
     }
     
     public static void buildModel() throws Exception
@@ -129,6 +131,6 @@ public class PMMLGenerator {
         ModelBuilder modelBuilder = new ModelBuilder(pmml, context);
         modelBuilder.build();
         
-        int a =1;
+       
     }
 }

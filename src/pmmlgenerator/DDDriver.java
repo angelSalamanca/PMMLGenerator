@@ -118,8 +118,7 @@ public class DDDriver {
         }
         return myDfs;
     }
-   
-        
+           
     private List<DataField> addOrdinalInteger() throws Exception
     {
         List<DataField> myDfs = new ArrayList<DataField>();
@@ -287,18 +286,36 @@ public class DDDriver {
                   for (int i = 0; i<intervalsDuple.actualNumber; i++)
                   {
                       Interval myInterval = new Interval();  
-                      myInterval.setClosure(nameGenerator.pickOne(closures));
+                      
                       myInterval.setLeftMargin((double)iValues.get(i));
                       myInterval.setRightMargin((double)iValues.get(i+1));
+                      
+                      if (myInterval.getLeftMargin()+1 == myInterval.getRightMargin())
+                      {
+                          myInterval.setClosure("closedOpen");
+                      }
+                      else
+                      {
+                           if (myInterval.getLeftMargin() == myInterval.getRightMargin())
+                            {
+                                 myInterval.setClosure("closedClosed");
+                             }
+                           else                               
+                           {
+                                // {"openClosed", "openOpen", "closedOpen", "closedClosed"};
+                                myInterval.setClosure(nameGenerator.pickOne(closures));
+                            }
+                        }        
+                      // The case where it's openopen and 
                       myList.add(myInterval);
                   }
-                  
+      
                 break;
                 
             default:
                 break;
-        
         }
+        
         return myList;
         }
         
