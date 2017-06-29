@@ -27,7 +27,9 @@ public class ModelBuilder {
     private Integer numTargetCategories;
     private String[] available;
     private List<String> fullList;
-   private List<String> categories;
+    private List<String> categories;
+    private GeneralRegressionModel grm;
+    private Integer paramNum;
    
     
     public ModelBuilder(PMML aPMML, Context thisContext)
@@ -48,7 +50,7 @@ public class ModelBuilder {
         switch(modelFamily)
         {
             case "GeneralRegressionModel":
-                GeneralRegressionModel grm = new GeneralRegressionModel();
+                this.grm = new GeneralRegressionModel();
                 pmml.setOneModel(grm);                
                 
                 grm.setModelType(nameGenerator.pickOne(General.GRMModelTypes));              
@@ -93,20 +95,20 @@ public class ModelBuilder {
                                  
                 LocalTransformations lt = buildLocalTransformations();
                 grm.addToContent(lt);
-                
-                // Parameters
-                ParameterList pl = buildParameterList();
-                grm.addToContent(pl);
-                
-                FactorList fl = buildFactorList();
+                               
+                FactorList fl = buildFactorList(ms);
                 grm.addToContent(fl);
                 
-                CovariateList cl = buildCovariateList();
-                grm.addToContent(cl);
-                
+                CovariateList cl = buildCovariateList(ms);
+                grm.addToContent(cl);                               
                  
                 PPMatrix ppm = buildPPMatrix();
                 grm.addToContent(ppm);
+                
+                // Parameters after PPMatrix
+                ParameterList pl = buildParameterList();
+                grm.addToContent(pl);
+                
                 
                  
                 ParamMatrix pm = buildParamMatrix();
@@ -203,33 +205,195 @@ public class ModelBuilder {
         {
             ParameterList pl = new ParameterList();
             
+             for (int np = 0; np<=paramNum; np++)
+            {
+                Parameter p = new Parameter();
+                p.setName("p"+String.valueOf(np));
+                if (np==0)
+                {
+                    p.setLabel("Intercept");
+                }
+                pl.saveParameter(p);
+            }
+             
             return pl;
         }
         
-            private FactorList buildFactorList()
-        {
-            FactorList fl = new FactorList();
+            private FactorList buildFactorList(MiningSchema ms)
+            {
+                FactorList fl = new FactorList();
+                
+               // retrieve all mining fields
+            List<MiningField> mFields = ms.getMiningField();
+            for (MiningField mf : mFields)
+            {
+                if (mf.getOptype()!=OPTYPE.CONTINUOUS & mf.getUsageType()!=FIELDUSAGETYPE.TARGET)
+                {
+                if (this.nameGenerator.doubleValue() < 0.5)
+                {
+                    Predictor p = new Predictor();
+                    p.setName(mf.getName());
+                    fl.addPredictor(p);
+                }
+                }
+            }
             
-            return fl;
-        }
+                
+                return fl;
+            }
+  
             
-                private CovariateList buildCovariateList()
+                private CovariateList buildCovariateList(MiningSchema ms)
         {
             CovariateList cl = new CovariateList();
+            
+            // retrieve all mining fields
+            List<MiningField> mFields = ms.getMiningField();
+            for (MiningField mf : mFields)
+            {
+                if (mf.getOptype()==OPTYPE.CONTINUOUS & mf.getUsageType()!=FIELDUSAGETYPE.TARGET)
+                {
+                if (this.nameGenerator.doubleValue() < 0.5)
+                {
+                    Predictor p = new Predictor();
+                    p.setName(mf.getName());
+                    cl.addPredictor(p);
+                }
+                }
+            }
             
             return cl;
         }
                 
-                private PPMatrix buildPPMatrix()
+                private PPMatrix buildPPMatrix() throws Exception
         {
             PPMatrix ppm = new PPMatrix();
             
+            // This is the cain of Spain
+            MiningSchema ms = (MiningSchema)grm.getFromContent("MiningSchema");
+             paramNum = 1;
+            // all factors first
+            FactorList fl = (FactorList)grm.getFromContent("FactorList");
+            
+            List<Predictor> predictors = fl.getPredictor();
+            
+            for (int i = 0 ; i< predictors.size() ;i++)
+            {
+                if (nameGenerator.doubleValue()<0.8)
+                {
+                    Predictor p = predictors.get(i);
+                    // get Mining Field
+                    MiningField mf = ms.readMiningField(p.getName());
+                    // go over all values, omg!
+                    this.fieldHelper = new FieldHelper(mf.getName(), pmml);
+                    for (Value v : this.fieldHelper.getValues())
+                    {
+                        // No interactions first
+                        PPCell cell = new PPCell();
+                        cell.setPredictorName(mf.getName());
+                        cell.setValue(v.getValue());
+                        cell.setParameterName("p" + String.valueOf(paramNum));
+                        ppm.savePPCell(cell);
+                        paramNum +=1;
+                        // 2 interactions now
+                         for (int j = i+1; j<  predictors.size() ;j++) 
+                         {
+                             Predictor q = predictors.get(j);
+                            // get Mining Field
+                           MiningField mf2 = ms.readMiningField(q.getName());
+                            // go over all values of predictor 2, omg!
+                           FieldHelper fh2 = new FieldHelper(mf2.getName(), pmml);      
+                             for (Value w : fh2.getValues())
+                            {
+                                 if (nameGenerator.doubleValue()<0.4) // only some interactions
+                                {
+                                    PPCell cell1 = new PPCell();
+                                    PPCell cell2 = new PPCell();
+                                    cell1.setPredictorName(mf.getName());
+                                    cell2.setPredictorName(mf2.getName());
+                                    cell1.setValue(v.getValue());
+                                    cell2.setValue(w.getValue());
+                                    cell1.setParameterName("p" + String.valueOf(paramNum));
+                                    cell2.setParameterName("p" + String.valueOf(paramNum));
+                                    ppm.savePPCell(cell1);
+                                    ppm.savePPCell(cell2);
+                                    paramNum +=1;
+                             }
+                            }                             
+                         }
+                    }
+                }
+            }            
+            
+            // and covariates now
+            CovariateList cl = (CovariateList)grm.getFromContent("CovariateList");
+            
+            predictors = cl.getPredictor();
+            
+            for (int i = 0 ; i< predictors.size() ;i++)
+            {
+                if (nameGenerator.doubleValue()<0.8)
+                {
+                    Predictor p = predictors.get(i);
+                    // get Mining Field
+                    MiningField mf = ms.readMiningField(p.getName());
+                    // go over all values, omg!
+                    this.fieldHelper = new FieldHelper(mf.getName(), pmml);
+                        // No interactions always
+                        PPCell cell = new PPCell();
+                        cell.setPredictorName(mf.getName());
+                        cell.setParameterName("p" + String.valueOf(paramNum));
+                        cell.setValue("1");
+                        ppm.savePPCell(cell);
+                        paramNum +=1;
+                       
+                }
+            }    
+            
+            // One to many
+            paramNum -=1;
             return ppm;
         }
                 
           private ParamMatrix buildParamMatrix()
         {
             ParamMatrix pm = new ParamMatrix();
+            
+            switch(grm.getFunctionName())
+                    {
+                case REGRESSION:
+                  for (int iPar =0; iPar<paramNum; iPar++)
+                {
+                    PCell cell = new PCell();
+                    cell.setParameterName("p"+String.valueOf(iPar));
+                    if (this.nameGenerator.doubleValue()>0.8)
+                    {
+                        cell.setBeta(this.nameGenerator.doubleValue());
+                    }
+                    pm.savePCell(cell);
+                }  
+                    break;
+                case CLASSIFICATION:
+            // Categories loop - exclude reference cat
+            for (int iCat = 0; iCat<this.numTargetCategories-1; iCat++)
+            {
+                // Parameter loop
+                for (int iPar =0; iPar<paramNum; iPar++)
+                {
+                    PCell cell = new PCell();
+                    cell.setTargetCategory(this.categories.get(iCat));
+                    cell.setParameterName("p"+String.valueOf(iPar));
+                    if (this.nameGenerator.doubleValue()>0.8)
+                    {
+                        cell.setBeta(this.nameGenerator.doubleValue());
+                    }
+                    pm.savePCell(cell);
+                }                 
+            }
+           
+                    
+            }
+            
             
             return pm;
         }

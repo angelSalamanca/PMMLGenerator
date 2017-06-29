@@ -108,4 +108,16 @@ public class MiningSchema {
         return this.miningField;
     }
 
+    public MiningField readMiningField(String fieldName)
+    {
+        for (MiningField mf : getMiningField())
+        {
+            if (fieldName.equals(mf.getName()))
+            {
+                return mf;
+            }
+        }
+        
+        return null;
+    }
 }

@@ -107,5 +107,13 @@ public class ParameterList {
         }
         return this.parameter;
     }
+    
+    public void  saveParameter(Parameter p)
+    {
+        if (parameter == null) {
+            parameter = new ArrayList<Parameter>();
+        }
+        parameter.add(p);
+            }
 
 }

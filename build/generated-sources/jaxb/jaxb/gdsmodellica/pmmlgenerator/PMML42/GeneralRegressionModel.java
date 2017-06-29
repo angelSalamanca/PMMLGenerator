@@ -770,4 +770,17 @@ public class GeneralRegressionModel {
         }
         this.content.add(item);
     }
+    
+    public Object getFromContent(String className)
+   {
+        for (Object item : content)
+        {
+            if (item.getClass().getSimpleName().equals(className))
+            {
+                return item;
+            }
+        }
+       
+       return null;
+   }
 }

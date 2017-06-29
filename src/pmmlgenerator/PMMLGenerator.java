@@ -57,6 +57,10 @@ public class PMMLGenerator {
         {
             throw new Exception();
         }
+        
+        // generate data
+        writer.writeData(pmml, 10, new NameGenerator());
+        
         int a =1;
         
         

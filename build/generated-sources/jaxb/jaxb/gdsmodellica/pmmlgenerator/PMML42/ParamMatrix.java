@@ -107,5 +107,13 @@ public class ParamMatrix {
         }
         return this.pCell;
     }
+    
+        public void savePCell(PCell cell) {
+        if (pCell == null) {
+            pCell = new ArrayList<PCell>();
+        }
+        pCell.add(cell);
+    }
 
+ 
 }

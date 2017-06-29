@@ -7,6 +7,8 @@ package pmmlgenerator.util;
 
 import java.util.Random;
 import java.util.*;
+import jaxb.gdsmodellica.pmmlgenerator.PMML42.*; 
+
 /**
  *
  * @author Angel Salamanca
@@ -66,9 +68,13 @@ public class NameGenerator {
     public ArrayList<Integer> intValues(int numValues)
     {
         ArrayList<Integer> values = new ArrayList<Integer>();
-        for (int i=0;  i<numValues; i++)
+        
+        
+        while (values.size()<numValues)
         {
-            values.add(randomGenerator.nextInt(100));
+            Integer generated = randomGenerator.nextInt(100);
+            if (!values.contains(generated));
+                {values.add(generated);}
         }
         Collections.sort(values);
         return values;
@@ -127,6 +133,13 @@ public class NameGenerator {
          return (double)Math.round(randomGenerator.nextDouble() * 10000000d) / 10000000d;
      }
      
+     public double doubleValue(double a, double b)
+     {         
+          Double d = randomGenerator.nextDouble()*(b-a)+a;
+         return (double)Math.round(d* 10000000d) / 10000000d;
+     }
+     
+     
      public Boolean booleanValue()
      {
          return randomGenerator.nextBoolean();
@@ -136,4 +149,79 @@ public class NameGenerator {
         int x = randomGenerator.nextInt(clazz.getEnumConstants().length);
         return clazz.getEnumConstants()[x];
     }
+      
+      public String getValue(DataField df) throws Exception
+      {
+            DATATYPE datatype = df.getDataType();
+            switch(datatype)
+            {
+                case STRING:
+                    // Try values
+                    List<Value> v =  df.getValue();
+                    if (v.size()>0)
+                    {
+                        return v.get(this.intValue(0, v.size()-1)).getValue();
+                    }
+                    
+                    // Anything will do
+                    return this.stringValue(3);
+                case INTEGER:
+                    // Try Intervals
+                    List<Interval> intervals = df.getInterval();
+                    if (intervals.size()>0)
+                    {
+                        Interval interval = intervals.get(this.intValue(0, intervals.size()-1));
+                        Integer leftBound = interval.getLeftMargin().intValue();
+                        Integer rightBound = interval.getRightMargin().intValue();
+                        switch(interval.getClosure())
+                        {
+                            case "closedClosed":
+                                break;
+                            case "openClosed":        
+                                leftBound +=1;
+                                break;
+                            case "closedOpen":        
+                                rightBound -=1;
+                                break;
+                            case "openOpen":        
+                                rightBound -=1;
+                                leftBound +=1;                                 
+                        }                        
+                        Integer iValue = leftBound + this.intValue(0, rightBound-leftBound);
+                        return String.valueOf(iValue);
+                    }
+                    // Try values
+                     v =  df.getValue();
+                    if (v.size()>0)
+                    {
+                        return v.get(this.intValue(0, v.size()-1)).getValue();
+                    }
+                    // Anything will do
+                    return String.valueOf(this.intValue(-50, 50));
+                case DOUBLE:
+                case FLOAT:    
+                    // Try Intervals
+                    intervals = df.getInterval();
+                    if (intervals.size()>0)
+                    {
+                        Interval interval = intervals.get(this.intValue(0, intervals.size()-1));
+                        Double leftBound = interval.getLeftMargin();
+                        Double rightBound = interval.getRightMargin();
+                        
+                        Double dValue = leftBound + this.doubleValue(0, rightBound-leftBound);
+                        return String.valueOf(dValue);
+                    }
+                    // Try values
+                     v =  df.getValue();
+                    if (v.size()>0)
+                    {
+                        return v.get(this.intValue(0, v.size()-1)).getValue();
+                    }
+                    // Anything will do
+                    return String.valueOf(this.doubleValue(-20,20));
+                    
+                default:
+                    throw new Exception("getValue");
+            }
+      }
 }

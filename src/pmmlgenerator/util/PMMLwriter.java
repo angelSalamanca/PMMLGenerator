@@ -5,7 +5,8 @@
  */
 package pmmlgenerator.util;
 
-import java.io.File;
+import java.io.*;
+import java.util.*;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -34,6 +35,43 @@ public class PMMLwriter {
          catch (JAXBException  e)
          {
              throw new Exception("JAXB excepion");
+         }
+    }
+    
+    public void writeData(PMML pmml, Integer numRecords, NameGenerator generator) throws Exception
+    {
+        DataField df0;
+        
+         try {
+             File dataFile = new File("D:\\generated.data.txt");
+             Writer writer = new BufferedWriter(new FileWriter(dataFile));
+             List<DataField> fields = pmml.getDataDictionary().getDataField();
+             
+// write Header
+             for (DataField df : fields)
+             {
+                 writer.write(df.getName());
+                 writer.write("\t");
+             }
+             writer.write("\n");
+
+             // write lines
+             for (int nl=0; nl<numRecords; nl++)
+             {
+                    for (DataField df : fields)
+                    {
+                        df0 = df;
+                        writer.write(generator.getValue(df));
+                        writer.write("\t");
+                     }
+             writer.write("\n");
+             }
+             writer.close();
+             
+         }
+         catch (Exception e)
+         {
+             throw new Exception("writeData exception: " + e.getMessage());
          }
     }
     

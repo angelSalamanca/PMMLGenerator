@@ -23,7 +23,7 @@ public class FieldHelper {
     private DerivedField derField;
     private String theClass;
     private NameGenerator generator;
-    
+        
     public FieldHelper(Object genericField) throws Exception
     {
         this.theField = genericField;        
@@ -63,6 +63,7 @@ public class FieldHelper {
                
             default: //MODEL
              // MiningField ?
+                containerClass = container.getClass().getName();
                Class modelClass = Class.forName(containerClass);
                 Field contentField = modelClass.getDeclaredField("content");
                Object content = contentField.get(container);

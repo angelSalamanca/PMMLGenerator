@@ -108,4 +108,11 @@ public class PPMatrix {
         return this.ppCell;
     }
 
+    public void savePPCell(PPCell cell)
+    {
+        if (ppCell == null) {
+            ppCell = new ArrayList<PPCell>();
+        }
+        ppCell.add(cell);
+    }
 }

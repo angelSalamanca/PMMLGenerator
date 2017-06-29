@@ -107,5 +107,12 @@ public class FactorList {
         }
         return this.predictor;
     }
-
+    
+    public void addPredictor(Predictor p)
+    {
+         if (predictor == null) {
+            predictor = new ArrayList<Predictor>();
+        }
+         predictor.add(p);
+    }
 }
