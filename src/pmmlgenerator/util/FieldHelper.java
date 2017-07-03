@@ -133,7 +133,33 @@ public class FieldHelper {
         }
     }
     
-    public Boolean isGRMTargetCompatible(MININGFUNCTION modelFunction)    throws Exception
+    public String  getName() throws Exception
+    {
+         switch(theClass)
+        {
+            case "DataField":
+                return dField.getName();
+            case "MiningField":
+                return mField.getName();
+            case "DerivedField":
+                return derField.getName();
+            default:
+                throw new Exception("Unexpected class");
+        }
+    }
+    
+    public Boolean  isTarget() throws Exception
+    {
+         switch(theClass)
+        {
+            case "MiningField":
+                return mField.getUsageType() == FIELDUSAGETYPE.TARGET;
+            default:
+                return false;
+        }
+    }
+    
+    public Boolean isGRMTargetCompatible(MININGFUNCTION modelFunction) throws Exception
     {
         OPTYPE optype = getOptype();
         DATATYPE datatype = getDataType();

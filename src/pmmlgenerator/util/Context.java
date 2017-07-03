@@ -25,44 +25,54 @@ public class Context {
        this.generator = new NameGenerator();
    }
    
-   public Map<String, Object> getFieldNames()
+   public Map<String, Object> getFieldNamesForMiningSchema() throws Exception
    {
-       Map<String, Object>names = new HashMap<String, Object>();
+       Map<String, Object>names = new HashMap<String, Object>();      
        
-       Scope walkerScope = currentScope;
+       PMML pmml = (PMML)rootScope.PMMLScope;       
        
-       while (walkerScope != null)
-       {
-           switch(walkerScope.scopeClass)
-           {
-               case "PMML":
-                    // Start with rootScope = PMML
-                    PMML pmml = (PMML)rootScope.PMMLScope;
-                    for (DataField df : pmml.getDataDictionary().getDataField())
-                    {
-                        names.put(df.getName(), pmml);         
-                    }
-      
-                    if (pmml.getTransformationDictionary() != null)
-                    {
-                            for (DerivedField df : pmml.getTransformationDictionary().getDerivedField())
-                            {
-                                names.put(df.getName(), pmml);
-                            }
-                    }
-           
-           break;
-                   
-               default:
-                                   
-           } // switch
-            walkerScope = walkerScope.parent;  
-       } //while
-       
-                    
-           
+            // First Data Dictionary
+            for (DataField df : pmml.getDataDictionary().getDataField())
+            {
+                names.put(df.getName(), pmml);         
+            }                    
+            // Then local Transformation of parent model
+            if (currentScope.isSecondOrMore())
+            {
+                for (DerivedField derF : currentScope.parent.readLocalDerivedFields())
+                      names.put(derF.getName(), this.currentScope);    
+            }       
        return names;
    }
+   
+   public Map<String, Object> getFieldNamesForModel() throws Exception
+   {
+        Map<String, Object>names = this.getFieldNamesForMiningSchema();
+        
+         PMML pmml = (PMML)rootScope.PMMLScope;       
+       
+         // First Transformation Dictionary
+         TransformationDictionary td = pmml.getTransformationDictionary();
+         if (td != null)
+         {
+            for (DerivedField derF : td.getDerivedField())
+            {
+                names.put(derF.getName(), pmml);         
+            } 
+         }                        
+         
+        // Then local Transformation of own model
+          List<DerivedField> ltfields = currentScope.readLocalDerivedFields();
+          if (ltfields != null)
+          {
+                for (DerivedField derF : ltfields)
+                {
+                      names.put(derF.getName(), this.currentScope);    
+                }       
+          }
+       return names;
+            
+   }   
    
    public Scope getCurrentScope()
    {
@@ -78,11 +88,19 @@ public class Context {
        this.currentScope = cScope;       
    }
    
-   public Object[] randomFieldName(DATATYPE datatype, Boolean dataFieldOnly) throws Exception
+   public Object[] randomFieldName(DATATYPE datatype, Boolean forModel) throws Exception
    {
-       Map<String, Object> fieldNames = this.getFieldNames();
+       Map<String, Object> fieldNames;
+       if (forModel)
+       {
+           fieldNames = this.getFieldNamesForModel();
+       }
+           else
+       {
+           fieldNames = this.getFieldNamesForMiningSchema();
+       }
        
-       // retain matching datatype only
+       // retain matching datatype only. Needed?
        Iterator<Map.Entry<String,Object>> iter = fieldNames.entrySet().iterator();      
        while (iter.hasNext()) {
              Map.Entry<String,Object> entry = iter.next();
@@ -90,28 +108,8 @@ public class Context {
             if (!fieldhelper.getDataType().equals(datatype)) {
                     iter.remove();
                 }
-        }
+        }            
        
-       if (dataFieldOnly)
-       {
-           // retain data fields only
-           Iterator<Map.Entry<String,Object>> iter2 = fieldNames.entrySet().iterator();      
-             while (iter2.hasNext()) {
-             Map.Entry<String,Object> entry = iter2.next();
-             FieldHelper fieldhelper = new FieldHelper(entry.getKey(), entry.getValue());
-             if (!fieldhelper.retrieveClass().equals("DataField")) {
-                    iter2.remove();
-                }
-            else
-            {
-                if (fieldhelper.getValues().size() < 2)
-                {
-                    iter2.remove();
-                }
-                
-             }
-         }
-       }
        Integer numFields = fieldNames.size();
        Integer selected = this.generator.intValue(0, numFields-1);
        

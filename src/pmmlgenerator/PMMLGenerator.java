@@ -8,6 +8,7 @@ package pmmlgenerator;
 import java.util.ArrayList;
 import java.util.List;
 import java.math.BigInteger;
+import javax.xml.bind.*;
 
 import pmmlgenerator.util.*;
 import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;        
@@ -35,8 +36,10 @@ public class PMMLGenerator {
         sentence = new Sentence();
         Scope pmmlScope = new Scope("", pmml, "PMML");
         context = new Context(pmmlScope);
-        General.attributeConstraintUniverse = (new ConstraintGenerator()).LoadAttributeConstraints();
+        General.attributeConstraintUniverse = (new ConstraintGenerator()).LoadAttributeConstraints();       
         
+        
+        pmml.setVersion("4.2");
         // Meaningless header
         buildHeader();
         // Data Dictionary

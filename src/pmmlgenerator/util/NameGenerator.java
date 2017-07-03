@@ -16,20 +16,26 @@ import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;
 public class NameGenerator {
     
     private Random randomGenerator;
+    private Map<String,Integer> fieldNums;
    
     public NameGenerator()
     {
         randomGenerator = new Random();
+        this.fieldNums = new HashMap<String,Integer>();
+        this.fieldNums.put("String",1);
+        this.fieldNums.put("Integer",1);
+        this.fieldNums.put("Float",1);
+        this.fieldNums.put("Double",1);       
+        
     }
     
-    public String getDataFieldName(String fieldType)
+    public String getDataFieldName(String fieldType) throws Exception
     {
         StringBuilder sb = new StringBuilder();
         
-        sb.append("DataField ");
-        sb.append(fieldType);
-        sb.append(" ");
-        sb.append(getVarNum());
+        sb.append("DataField");
+        sb.append(fieldType);        
+        sb.append(getDataFieldNum(fieldType));
                            
         return sb.toString();
     }
@@ -62,6 +68,23 @@ public class NameGenerator {
     private String getVarNum()
     {
         int varNum = randomGenerator.nextInt(99999);
+        return String.valueOf(varNum);
+    }
+    
+     private String getDataFieldNum(String fieldType) throws Exception
+    {
+        int varNum;
+        
+        try
+        {
+            varNum = this.fieldNums.get(fieldType);
+            this.fieldNums.put(fieldType, 1+varNum);
+        }
+        catch (Exception e)
+        {
+                throw new Exception("Unexpected field type");        
+        }
+               
         return String.valueOf(varNum);
     }
     

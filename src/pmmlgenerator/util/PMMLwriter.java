@@ -12,6 +12,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;        
+import static pmmlgenerator.PMMLGenerator.pmml;
 
 /**
  *
@@ -27,9 +28,14 @@ public class PMMLwriter {
         File file = new File("D:\\generated.pmml");
         JAXBContext jaxbContext = JAXBContext.newInstance(PMML.class);
         Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+        // Add namespaces
+        
+        
+        
         // output pretty printed
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
+        jaxbMarshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "http://www.dmg.org/PMML-4_2 http://www.dmg.org/v4-2/pmml-4-2.xsd");
+        
         jaxbMarshaller.marshal(pmml, file);
          }
          catch (JAXBException  e)

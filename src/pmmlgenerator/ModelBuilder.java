@@ -97,23 +97,19 @@ public class ModelBuilder {
                 grm.addToContent(lt);
                                
                 FactorList fl = buildFactorList(ms);
-                grm.addToContent(fl);
-                
                 CovariateList cl = buildCovariateList(ms);
-                grm.addToContent(cl);                               
-                 
-                PPMatrix ppm = buildPPMatrix();
-                grm.addToContent(ppm);
+                
+                PPMatrix ppm = buildPPMatrix(fl, cl);
                 
                 // Parameters after PPMatrix
                 ParameterList pl = buildParameterList();
-                grm.addToContent(pl);
-                
-                
+                grm.addToContent(pl); // Order of addition is important!
+                grm.addToContent(fl);                                       
+                grm.addToContent(cl);            
+                grm.addToContent(ppm);
                  
                 ParamMatrix pm = buildParamMatrix();
                 grm.addToContent(pm);
-                
                   
                 // Get # of categories from target field
                   if (grm.getFunctionName() ==MININGFUNCTION.CLASSIFICATION ){
@@ -135,7 +131,7 @@ public class ModelBuilder {
             Boolean firstField = isSupervised;
             
             // Generation of fields based on context
-            Map<String, Object> fieldCatalog = context.getFieldNames();
+            Map<String, Object> fieldCatalog = context.getFieldNamesForMiningSchema();
             
             Iterator it = fieldCatalog.entrySet().iterator();
             
@@ -219,44 +215,56 @@ public class ModelBuilder {
             return pl;
         }
         
-            private FactorList buildFactorList(MiningSchema ms)
+            private FactorList buildFactorList(MiningSchema ms) throws Exception
             {
                 FactorList fl = new FactorList();
                 
-               // retrieve all mining fields
-            List<MiningField> mFields = ms.getMiningField();
-            for (MiningField mf : mFields)
+               // retrieve all candidate fields for modelling
+            Map<String, Object>fieldCatalog = this.context.getFieldNamesForModel(); // all kind of fields: MS, TD and LT
+            Iterator it = fieldCatalog.entrySet().iterator();
+            
+             while (it.hasNext()) 
             {
-                if (mf.getOptype()!=OPTYPE.CONTINUOUS & mf.getUsageType()!=FIELDUSAGETYPE.TARGET)
+                // retrieve the field
+                 Map.Entry pair = (Map.Entry)it.next();
+                String fieldName = (String)pair.getKey();
+                FieldHelper fieldhelper = new FieldHelper(fieldName, pair.getValue()); // value is container
+                
+                if (fieldhelper.getOptype()!=OPTYPE.CONTINUOUS & !fieldhelper.isTarget())
                 {
                 if (this.nameGenerator.doubleValue() < 0.5)
                 {
                     Predictor p = new Predictor();
-                    p.setName(mf.getName());
+                    p.setName(fieldhelper.getName());
                     fl.addPredictor(p);
                 }
                 }
             }
-            
-                
                 return fl;
             }
   
             
-                private CovariateList buildCovariateList(MiningSchema ms)
+        private CovariateList buildCovariateList(MiningSchema ms) throws Exception
         {
             CovariateList cl = new CovariateList();
             
             // retrieve all mining fields
-            List<MiningField> mFields = ms.getMiningField();
-            for (MiningField mf : mFields)
+             Map<String, Object>fieldCatalog = this.context.getFieldNamesForModel(); // all kind of fields: MS, TD and LT
+              Iterator it = fieldCatalog.entrySet().iterator();
+              
+            while (it.hasNext()) 
             {
-                if (mf.getOptype()==OPTYPE.CONTINUOUS & mf.getUsageType()!=FIELDUSAGETYPE.TARGET)
+                 // retrieve the field
+                 Map.Entry pair = (Map.Entry)it.next();
+                String fieldName = (String)pair.getKey();
+                FieldHelper fieldhelper = new FieldHelper(fieldName, pair.getValue()); // value is container
+          
+                if (fieldhelper.getOptype()!=OPTYPE.CONTINUOUS & !fieldhelper.isTarget())
                 {
                 if (this.nameGenerator.doubleValue() < 0.5)
                 {
                     Predictor p = new Predictor();
-                    p.setName(mf.getName());
+                    p.setName(fieldhelper.getName());
                     cl.addPredictor(p);
                 }
                 }
@@ -265,15 +273,13 @@ public class ModelBuilder {
             return cl;
         }
                 
-                private PPMatrix buildPPMatrix() throws Exception
+                private PPMatrix buildPPMatrix(FactorList fl, CovariateList cl) throws Exception
         {
             PPMatrix ppm = new PPMatrix();
             
-            // This is the cain of Spain
-            MiningSchema ms = (MiningSchema)grm.getFromContent("MiningSchema");
+            Map <String, Object> modelFields = this.context.getFieldNamesForModel();
              paramNum = 1;
             // all factors first
-            FactorList fl = (FactorList)grm.getFromContent("FactorList");
             
             List<Predictor> predictors = fl.getPredictor();
             
@@ -282,15 +288,15 @@ public class ModelBuilder {
                 if (nameGenerator.doubleValue()<0.8)
                 {
                     Predictor p = predictors.get(i);
-                    // get Mining Field
-                    MiningField mf = ms.readMiningField(p.getName());
+                    String fieldName = p.getName();
+                   
                     // go over all values, omg!
-                    this.fieldHelper = new FieldHelper(mf.getName(), pmml);
+                    this.fieldHelper = new FieldHelper(fieldName, modelFields.get(fieldName));
                     for (Value v : this.fieldHelper.getValues())
                     {
                         // No interactions first
                         PPCell cell = new PPCell();
-                        cell.setPredictorName(mf.getName());
+                        cell.setPredictorName(fieldName);
                         cell.setValue(v.getValue());
                         cell.setParameterName("p" + String.valueOf(paramNum));
                         ppm.savePPCell(cell);
@@ -299,18 +305,18 @@ public class ModelBuilder {
                          for (int j = i+1; j<  predictors.size() ;j++) 
                          {
                              Predictor q = predictors.get(j);
-                            // get Mining Field
-                           MiningField mf2 = ms.readMiningField(q.getName());
-                            // go over all values of predictor 2, omg!
-                           FieldHelper fh2 = new FieldHelper(mf2.getName(), pmml);      
+                             String fieldName2 = q.getName();
+                            // get  Field
+                            FieldHelper fh2 = new FieldHelper(fieldName2, modelFields.get(fieldName2));
+                          
                              for (Value w : fh2.getValues())
                             {
                                  if (nameGenerator.doubleValue()<0.4) // only some interactions
                                 {
                                     PPCell cell1 = new PPCell();
                                     PPCell cell2 = new PPCell();
-                                    cell1.setPredictorName(mf.getName());
-                                    cell2.setPredictorName(mf2.getName());
+                                    cell1.setPredictorName(fieldName);
+                                    cell2.setPredictorName(fieldName2);
                                     cell1.setValue(v.getValue());
                                     cell2.setValue(w.getValue());
                                     cell1.setParameterName("p" + String.valueOf(paramNum));
@@ -325,8 +331,7 @@ public class ModelBuilder {
                 }
             }            
             
-            // and covariates now
-            CovariateList cl = (CovariateList)grm.getFromContent("CovariateList");
+            // and covariates now           
             
             predictors = cl.getPredictor();
             
@@ -334,14 +339,14 @@ public class ModelBuilder {
             {
                 if (nameGenerator.doubleValue()<0.8)
                 {
-                    Predictor p = predictors.get(i);
-                    // get Mining Field
-                    MiningField mf = ms.readMiningField(p.getName());
+                    Predictor p = predictors.get(i);               
+                    String fieldName = p.getName();
+                   
                     // go over all values, omg!
-                    this.fieldHelper = new FieldHelper(mf.getName(), pmml);
+                    this.fieldHelper = new FieldHelper(fieldName, modelFields.get(fieldName));
                         // No interactions always
                         PPCell cell = new PPCell();
-                        cell.setPredictorName(mf.getName());
+                        cell.setPredictorName(fieldName);
                         cell.setParameterName("p" + String.valueOf(paramNum));
                         cell.setValue("1");
                         ppm.savePPCell(cell);

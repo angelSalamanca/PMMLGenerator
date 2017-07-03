@@ -6,6 +6,7 @@
 package pmmlgenerator.util;
 
 import java.util.*;
+import jaxb.gdsmodellica.pmmlgenerator.PMML42.*; 
 
 /**
  *
@@ -43,6 +44,34 @@ public class Scope {
     public Boolean isRoot()
     {
         return parent == null;
+    }
+    
+    public Boolean isSecondOrMore()
+    {
+      if (this.isRoot()) { return false;}
+      if (this.parent.isRoot()) { return false;}
+      return true;
+    }
+    
+    public List<DerivedField> readLocalDerivedFields() throws Exception
+    {
+        switch (this.PMMLScope.getClass().getSimpleName())
+        {
+            case "GeneralRegressionModel":
+                GeneralRegressionModel grm = (GeneralRegressionModel)PMMLScope;
+                LocalTransformations lt = (LocalTransformations)grm.getFromContent("LocalTransformations");
+                if (lt!=null)
+                {
+                  return lt.getDerivedField();
+                }
+            else
+                {
+                    return null;
+                }
+                
+            default:
+               return null;
+        }
     }
     
     
