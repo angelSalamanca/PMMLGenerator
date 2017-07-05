@@ -24,50 +24,98 @@ public class PMMLGenerator {
     public static DDDriver dddriver;
     public static Sentence sentence;
     public static Context context;
+    public static Integer numPmmlFiles;
+    public static Integer numRecords;
+    public static String pmmlPath;
     // public static AttributeConstraintUniverse attributeConstraintUniverse;
-
     
     /**
      * @param args the command line arguments
+     * arg0: # pmml files
+     * arg1: # records in *.data.txt
+     * arg2: Folder for both files
      */
+    
     public static void main(String[] args) throws Exception {
-        // TODO code application logic here
-        pmml = new PMML();
-        sentence = new Sentence();
-        Scope pmmlScope = new Scope("", pmml, "PMML");
-        context = new Context(pmmlScope);
-        General.attributeConstraintUniverse = (new ConstraintGenerator()).LoadAttributeConstraints();       
+      
+        Boolean success = false;
+        numPmmlFiles = 1;
+        numRecords = 10;
+        pmmlPath = "D:\\";
         
-        
-        pmml.setVersion("4.2");
-        // Meaningless header
-        buildHeader();
-        // Data Dictionary
-        
-        buildDDDriver();
-        buildDataDictionary();
-        buildTransformationDictionary();
-        buildModel();
-        
-        
-        // serialize PMML
-        PMMLwriter writer = new PMMLwriter();
         try
         {
-        writer.write(pmml);
+            if (args.length==3)
+            {
+                numPmmlFiles = Integer.parseInt(args[0]);
+                numRecords = Integer.parseInt(args[1]);
+                pmmlPath = args[2];
+            }
         }
         catch (Exception e)
+            { throw new Exception("Wrong argument list");
+        }        
+        
+        Integer successes = 0;
+        while(successes < numPmmlFiles)
         {
-            throw new Exception();
+            success = generate();
+            if(!success) {
+                   System.out.println("Generation failed. Retrying.");
+            }
+            else
+            {
+                successes +=1;
+            }
         }
-         System.out.println("PMML file written");
-        // generate data
-        writer.writeData(pmml, 10, new NameGenerator());
         
-        System.out.println("Data file written");
+         System.out.println("Generation completed.");       
         
+    }
+    
+    private static Boolean generate()
+    {
+            try
+            {
+                  pmml = new PMML();
+                  sentence = new Sentence();
+                  Scope pmmlScope = new Scope("", pmml, "PMML");
+                  context = new Context(pmmlScope);
+                  General.attributeConstraintUniverse = (new ConstraintGenerator()).LoadAttributeConstraints();               
         
+                pmml.setVersion("4.2");
+                // Meaningless header
+                buildHeader();
+                // Data Dictionary
         
+                buildDDDriver();
+                buildDataDictionary();
+                buildTransformationDictionary();
+                buildModel();
+                
+        // serialize PMML
+                NameGenerator generator = new NameGenerator();
+                PMMLwriter writer = new PMMLwriter(pmmlPath, String.valueOf(generator.intValue(10000, 99999)));
+                try
+                {
+                    writer.write(pmml);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception();
+                }
+                System.out.println("PMML file written");
+                // generate data
+                writer.writeData(pmml, numRecords, generator);
+        
+                System.out.println("Data file written");
+      
+                return true;
+            }    
+            catch (Exception e)
+            {
+                return false;
+            }
     }
     
     public static void buildDDDriver()

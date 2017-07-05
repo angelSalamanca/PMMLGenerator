@@ -128,6 +128,40 @@ public class NameGenerator {
         return values;
         
     }
+     
+     public ArrayList<Double> double01Values(Integer numValues, Double a, Double b)
+     {
+          ArrayList<Double> values = this.doubleValues(numValues);
+          
+          // move to zero
+          Double shift = values.get(0);
+          for (int i = 0; i<values.size(); i++)
+          {
+              values.set(i, values.get(i) - shift);
+          }
+          
+          // max to 1
+          Double divider = values.get(values.size()-1);
+          for (int i = 0; i<values.size(); i++)
+          {
+              values.set(i, values.get(i)/divider);
+          }
+          
+          // and back
+          
+          for (int i = 0; i<values.size(); i++)
+          {
+              values.set(i, values.get(i) * b);
+          }
+          
+           for (int i = 0; i<values.size(); i++)
+          {
+              values.set(i, values.get(i) + a);
+          }
+          
+          return values;
+          
+     }
     
      public ArrayList<Float> floatValues(int numValues)
     {

@@ -34,22 +34,22 @@ public class FieldHelper {
     public FieldHelper(String fieldName, Object container) throws Exception
     {
         String containerClass = container.getClass().getSimpleName();
+        Object content;
         
         containerswitch:
         switch(containerClass)
         {
             case "PMML":
                 PMML pmml = (PMML)container;
-             // DataField ?
-            List<DataField> dataFields = pmml.getDataDictionary().getDataField();
-            for (DataField df : dataFields) {
+                 // DataField ?
+                List<DataField> dataFields = pmml.getDataDictionary().getDataField();
+                for (DataField df : dataFields) {
                 if (df.getName() == fieldName)
                 {
                     this.theField = df;
                     break containerswitch;
                 }
-            }
-            
+            }            
             // DerivedField ?
             List<DerivedField> derivedFields = pmml.getTransformationDictionary().getDerivedField();
             for (DerivedField derf : derivedFields) {
@@ -60,20 +60,31 @@ public class FieldHelper {
                 }
             }
             break;   
-            default: //MODEL
-             // MiningField ?
-                containerClass = container.getClass().getName();
-               Class modelClass = Class.forName(containerClass);
-                Field contentField = modelClass.getDeclaredField("content");
-               Object content = contentField.get(container);
-              
-                // TO COMPLETE
                 
-                // DerivedField ?
-                // TO DO
+          case "GeneralRegressionModel":
+                   content = ((GeneralRegressionModel)container).getFromContent("MiningSchema");
+                    for (MiningField mf : ((MiningSchema)content).getMiningField()) {
+                    if (mf.getName() == fieldName)
+                    {
+                        this.theField = mf;
+                        break  containerswitch;
+                    }
+                }
+          
+            // DerivedField ?
+            content  = ((GeneralRegressionModel)container).getFromContent("LocalTransformations");
+            for (DerivedField derf : ((LocalTransformations)content).getDerivedField()) {
+                if (derf.getName() == fieldName)
+                {
+                    this.theField = derf;
+                    break  containerswitch;
+                }
+            }
                 
-        }
-       
+            default:    //MODEL            
+                throw new Exception ("Unexpected model " + containerClass);
+            }            
+        
         if (this.theField == null)
         {
                 throw new Exception("field not found in context");
@@ -83,6 +94,11 @@ public class FieldHelper {
         this.generator = new NameGenerator();
     }
        
+    public String getTheClass()
+    {
+        return this.theClass;
+    }
+    
     private void castField() throws Exception
     {
          theClass = this.theField.getClass().getSimpleName();
@@ -206,6 +222,11 @@ public class FieldHelper {
     
     public String randomValue() throws Exception
     {
+        if (this.dField != null)
+        {
+            return this.generator.getValue(dField);
+        }
+        
          switch(this.getDataType())
         {
             case STRING:
@@ -221,5 +242,59 @@ public class FieldHelper {
                 throw new Exception("Unexpected class");
         }
     }
+
+    public List<Double> getIntervals(Integer numIntervals)
+    {
+        // get absolute limits
+        Double absoluteLeft;
+        Double absoluteRight;
+       
+        
+        if (this.theClass.equals("DataField"))
+        {
+            List<Interval> intervals = this.dField.getInterval();
+            absoluteLeft = intervals.get(0).getLeftMargin(); //-this.generator.doubleValue(1, 2);
+            if (absoluteLeft == null)
+            {
+                  absoluteLeft = this.generator.doubleValue(-100, 100);
+            }
+            else
+            {
+                  absoluteLeft = absoluteLeft - this.generator.doubleValue(1, 2);  
+            }
+            
+            absoluteRight = intervals.get(intervals.size()-1).getRightMargin();
+             if (absoluteRight== null)
+            {
+                  absoluteRight = absoluteLeft +this.generator.doubleValue(10, 100);
+            }
+            else
+            {
+                  absoluteRight = absoluteRight + this.generator.doubleValue(1, 2);  
+            }
+        }
+        else
+        {
+            absoluteLeft = this.generator.doubleValue(-100, 100);
+            absoluteRight = absoluteLeft + this.generator.doubleValue(10, 100);
+        }
+        
+        // Now split the absolute interval in numInterval pieces
+        return this.generator.double01Values(numIntervals,  absoluteLeft, absoluteRight);
+        
+    }
+
+    public List<Interval> getInterVals()
+     {
+         if (this.theClass.equals("DataField"))
+         {
+             return this.dField.getInterval();
+         }
+         else
+         {
+             return new ArrayList<Interval>();
+         }
+     }
     
+   
 }

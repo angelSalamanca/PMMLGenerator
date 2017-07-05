@@ -20,17 +20,23 @@ import static pmmlgenerator.PMMLGenerator.pmml;
  */
 public class PMMLwriter {
     
+    private String pmmlPath;
+    private String id;
+    
+    public PMMLwriter(String thispath, String thisid)
+    {
+        this.pmmlPath = thispath;
+        this.id = thisid;
+    }
     
     public void write(PMML pmml) throws Exception
     {
         
          try {
-        File file = new File("D:\\generated.pmml");
+        File file = new File(pmmlPath + "generated." + id + ".pmml");
         JAXBContext jaxbContext = JAXBContext.newInstance(PMML.class);
         Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
         // Add namespaces
-        
-        
         
         // output pretty printed
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -49,7 +55,7 @@ public class PMMLwriter {
         DataField df0;
         
          try {
-             File dataFile = new File("D:\\generated.data.txt");
+             File dataFile = new File(pmmlPath + "generated." + id + ".data.txt");
              Writer writer = new BufferedWriter(new FileWriter(dataFile));
              List<DataField> fields = pmml.getDataDictionary().getDataField();
              

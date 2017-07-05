@@ -63,7 +63,11 @@ public class ModelBuilder {
                 available = General.attributeConstraintUniverse.getAvailableValues(modelFamily, "functionName", "modelType", grm.getModelType(), General.GRMFunctions);
                 grm.setFunctionName(MININGFUNCTION.valueOf(nameGenerator.pickOne(available)));
                 
-                grm.setCumulativeLink(CUMULATIVELINKFUNCTION.values()[nameGenerator.pickOne(General.GRMcumLinkFunctions)]);
+                if (grm.getModelType().equals("ordinalMultinomial"))
+                {
+                    grm.setCumulativeLink(CUMULATIVELINKFUNCTION.values()[nameGenerator.pickOne(General.GRMcumLinkFunctions)]);
+                }
+                
                 LINKFUNCTION lf = LINKFUNCTION.values()[nameGenerator.pickOne(General.GRMLinkFunctions)];
                 grm.setLinkFunction(lf);
                 if (lf == LINKFUNCTION.ODDSPOWER || lf == LINKFUNCTION.POWER)
@@ -139,7 +143,7 @@ public class ModelBuilder {
                 // random pick
                  Map.Entry pair = (Map.Entry)it.next();
                 double d = this.nameGenerator.doubleValue();
-                if (d<0.75)
+                if (d<0.75 || this.context.inTransformationDictionary((String)pair.getKey()))
                 {
                     MiningField mField = new MiningField();
                     String fieldName = (String)pair.getKey();
@@ -180,8 +184,7 @@ public class ModelBuilder {
                    if (this.nameGenerator.doubleValue()<0.5)
                    {
                        mField.setMissingValueReplacement(this.fieldHelper.randomValue());
-                   }
-                   
+                   }                   
                    
                     miningFields.add(mField);
                 }  
@@ -259,7 +262,7 @@ public class ModelBuilder {
                 String fieldName = (String)pair.getKey();
                 FieldHelper fieldhelper = new FieldHelper(fieldName, pair.getValue()); // value is container
           
-                if (fieldhelper.getOptype()!=OPTYPE.CONTINUOUS & !fieldhelper.isTarget())
+                if (fieldhelper.getOptype()==OPTYPE.CONTINUOUS & !fieldhelper.isTarget())
                 {
                 if (this.nameGenerator.doubleValue() < 0.5)
                 {
@@ -273,7 +276,7 @@ public class ModelBuilder {
             return cl;
         }
                 
-                private PPMatrix buildPPMatrix(FactorList fl, CovariateList cl) throws Exception
+        private PPMatrix buildPPMatrix(FactorList fl, CovariateList cl) throws Exception
         {
             PPMatrix ppm = new PPMatrix();
             
@@ -363,7 +366,7 @@ public class ModelBuilder {
           private ParamMatrix buildParamMatrix()
         {
             ParamMatrix pm = new ParamMatrix();
-            
+           
             switch(grm.getFunctionName())
                     {
                 case REGRESSION:
@@ -379,20 +382,29 @@ public class ModelBuilder {
                 }  
                     break;
                 case CLASSIFICATION:
-            // Categories loop - exclude reference cat
-            for (int iCat = 0; iCat<this.numTargetCategories-1; iCat++)
-            {
-                // Parameter loop
-                for (int iPar =0; iPar<paramNum; iPar++)
-                {
-                    PCell cell = new PCell();
-                    cell.setTargetCategory(this.categories.get(iCat));
-                    cell.setParameterName("p"+String.valueOf(iPar));
-                    if (this.nameGenerator.doubleValue()>0.8)
-                    {
-                        cell.setBeta(this.nameGenerator.doubleValue());
-                    }
-                    pm.savePCell(cell);
+                        Boolean isOrdMult = grm.getModelType().equals("ordinalMultinomial");
+         
+                       // Categories loop - exclude reference cat
+                        for (int iCat = 0; iCat<this.numTargetCategories-1; iCat++)
+                        {
+                       // Parameter loop
+                        for (int iPar =0; iPar<paramNum; iPar++)
+                        {
+                        PCell cell = new PCell();
+                        if (!isOrdMult || iPar==0)
+                        {
+                            cell.setTargetCategory(this.categories.get(iCat)); // no target cat for p1 etc in OrdMult
+                        }
+                        cell.setParameterName("p"+String.valueOf(iPar));
+                        if (this.nameGenerator.doubleValue()<0.8)
+                        {
+                            cell.setBeta(this.nameGenerator.doubleValue());
+                        }
+                        pm.savePCell(cell);
+                        if (isOrdMult && iCat==1)
+                        {
+                            break; // for
+                        }
                 }                 
             }
            
