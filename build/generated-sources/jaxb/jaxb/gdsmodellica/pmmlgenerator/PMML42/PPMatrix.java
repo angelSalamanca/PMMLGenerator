@@ -2,7 +2,7 @@
 // Este archivo ha sido generado por la arquitectura JavaTM para la implantación de la referencia de enlace (JAXB) XML v2.2.5-2 
 // Visite <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Todas las modificaciones realizadas en este archivo se perderán si se vuelve a compilar el esquema de origen. 
-// Generado el: AM.06.18 a las 09:08:21 AM CEST 
+// Generado el: PM.07.06 a las 10:07:19 PM CEST 
 //
 
 
@@ -108,11 +108,4 @@ public class PPMatrix {
         return this.ppCell;
     }
 
-    public void savePPCell(PPCell cell)
-    {
-        if (ppCell == null) {
-            ppCell = new ArrayList<PPCell>();
-        }
-        ppCell.add(cell);
-    }
 }

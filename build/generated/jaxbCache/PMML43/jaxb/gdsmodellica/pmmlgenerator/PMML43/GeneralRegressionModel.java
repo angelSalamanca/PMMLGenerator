@@ -2,7 +2,7 @@
 // Este archivo ha sido generado por la arquitectura JavaTM para la implantación de la referencia de enlace (JAXB) XML v2.2.5-2 
 // Visite <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Todas las modificaciones realizadas en este archivo se perderán si se vuelve a compilar el esquema de origen. 
-// Generado el: AM.06.18 a las 09:08:24 AM CEST 
+// Generado el: PM.07.06 a las 10:07:22 PM CEST 
 //
 
 
@@ -108,22 +108,22 @@ import javax.xml.bind.annotation.XmlType;
 public class GeneralRegressionModel {
 
     @XmlElementRefs({
+        @XmlElementRef(name = "PPMatrix", namespace = "http://www.dmg.org/PMML-4_3", type = PPMatrix.class, required = false),
         @XmlElementRef(name = "PCovMatrix", namespace = "http://www.dmg.org/PMML-4_3", type = PCovMatrix.class, required = false),
+        @XmlElementRef(name = "MiningSchema", namespace = "http://www.dmg.org/PMML-4_3", type = MiningSchema.class, required = false),
         @XmlElementRef(name = "Targets", namespace = "http://www.dmg.org/PMML-4_3", type = Targets.class, required = false),
+        @XmlElementRef(name = "FactorList", namespace = "http://www.dmg.org/PMML-4_3", type = FactorList.class, required = false),
+        @XmlElementRef(name = "ParameterList", namespace = "http://www.dmg.org/PMML-4_3", type = ParameterList.class, required = false),
+        @XmlElementRef(name = "ModelStats", namespace = "http://www.dmg.org/PMML-4_3", type = ModelStats.class, required = false),
         @XmlElementRef(name = "ParamMatrix", namespace = "http://www.dmg.org/PMML-4_3", type = ParamMatrix.class, required = false),
+        @XmlElementRef(name = "LocalTransformations", namespace = "http://www.dmg.org/PMML-4_3", type = LocalTransformations.class, required = false),
+        @XmlElementRef(name = "ModelVerification", namespace = "http://www.dmg.org/PMML-4_3", type = ModelVerification.class, required = false),
+        @XmlElementRef(name = "Output", namespace = "http://www.dmg.org/PMML-4_3", type = Output.class, required = false),
         @XmlElementRef(name = "ModelExplanation", namespace = "http://www.dmg.org/PMML-4_3", type = ModelExplanation.class, required = false),
         @XmlElementRef(name = "CovariateList", namespace = "http://www.dmg.org/PMML-4_3", type = CovariateList.class, required = false),
-        @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_3", type = Extension.class, required = false),
-        @XmlElementRef(name = "Output", namespace = "http://www.dmg.org/PMML-4_3", type = Output.class, required = false),
-        @XmlElementRef(name = "MiningSchema", namespace = "http://www.dmg.org/PMML-4_3", type = MiningSchema.class, required = false),
-        @XmlElementRef(name = "PPMatrix", namespace = "http://www.dmg.org/PMML-4_3", type = PPMatrix.class, required = false),
-        @XmlElementRef(name = "ParameterList", namespace = "http://www.dmg.org/PMML-4_3", type = ParameterList.class, required = false),
-        @XmlElementRef(name = "LocalTransformations", namespace = "http://www.dmg.org/PMML-4_3", type = LocalTransformations.class, required = false),
-        @XmlElementRef(name = "ModelStats", namespace = "http://www.dmg.org/PMML-4_3", type = ModelStats.class, required = false),
         @XmlElementRef(name = "BaseCumHazardTables", namespace = "http://www.dmg.org/PMML-4_3", type = BaseCumHazardTables.class, required = false),
-        @XmlElementRef(name = "FactorList", namespace = "http://www.dmg.org/PMML-4_3", type = FactorList.class, required = false),
         @XmlElementRef(name = "EventValues", namespace = "http://www.dmg.org/PMML-4_3", type = EventValues.class, required = false),
-        @XmlElementRef(name = "ModelVerification", namespace = "http://www.dmg.org/PMML-4_3", type = ModelVerification.class, required = false)
+        @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_3", type = Extension.class, required = false)
     })
     protected List<Object> content;
     @XmlAttribute(name = "targetVariableName")
@@ -199,22 +199,22 @@ public class GeneralRegressionModel {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
+     * {@link PPMatrix }
      * {@link PCovMatrix }
+     * {@link MiningSchema }
      * {@link Targets }
+     * {@link FactorList }
+     * {@link ParameterList }
+     * {@link ModelStats }
      * {@link ParamMatrix }
+     * {@link LocalTransformations }
+     * {@link ModelVerification }
+     * {@link Output }
      * {@link ModelExplanation }
      * {@link CovariateList }
-     * {@link Extension }
-     * {@link Output }
-     * {@link MiningSchema }
-     * {@link PPMatrix }
-     * {@link ParameterList }
-     * {@link LocalTransformations }
-     * {@link ModelStats }
      * {@link BaseCumHazardTables }
-     * {@link FactorList }
      * {@link EventValues }
-     * {@link ModelVerification }
+     * {@link Extension }
      * 
      * 
      */

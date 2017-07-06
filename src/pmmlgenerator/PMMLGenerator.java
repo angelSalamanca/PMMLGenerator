@@ -57,9 +57,12 @@ public class PMMLGenerator {
         }        
         
         Integer successes = 0;
-        while(successes < numPmmlFiles)
+        Integer tries = 0;
+        Integer maxTries = 5*numPmmlFiles;
+        while(successes < numPmmlFiles && tries < maxTries)
         {
-            success = generate();
+            tries +=1;
+            success = generate();            
             if(!success) {
                    System.out.println("Generation failed. Retrying.");
             }
@@ -67,10 +70,8 @@ public class PMMLGenerator {
             {
                 successes +=1;
             }
-        }
-        
-         System.out.println("Generation completed.");       
-        
+        }        
+         System.out.println("Generation completed with " + String.valueOf(successes) + " PMML files");        
     }
     
     private static Boolean generate()
@@ -90,7 +91,9 @@ public class PMMLGenerator {
         
                 buildDDDriver();
                 buildDataDictionary();
+                context.createFieldUniverse(); // to create FieldUniverse
                 buildTransformationDictionary();
+                context.createFieldUniverse(); // to update FieldUniverse
                 buildModel();
                 
         // serialize PMML
@@ -122,13 +125,13 @@ public class PMMLGenerator {
     {
         dddriver = new DDDriver();
         
-        dddriver.categoricalString = new IntDuple(0,20);
+        dddriver.categoricalString = new IntDuple(2,20);
        
         
         dddriver.categoricalInteger = new IntDuple(1,10);
         dddriver.categoricalIntegerValues = new IntDuple(0,5);
         
-        dddriver.ordinalString = new IntDuple(1,5);
+        dddriver.ordinalString = new IntDuple(0,5);
          dddriver.ordinalStringValues = new IntDuple(2,10);
           
         dddriver.ordinalInteger = new IntDuple(1,5);

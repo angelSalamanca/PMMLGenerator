@@ -2,7 +2,7 @@
 // Este archivo ha sido generado por la arquitectura JavaTM para la implantación de la referencia de enlace (JAXB) XML v2.2.5-2 
 // Visite <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Todas las modificaciones realizadas en este archivo se perderán si se vuelve a compilar el esquema de origen. 
-// Generado el: AM.06.18 a las 09:08:21 AM CEST 
+// Generado el: PM.07.06 a las 10:07:19 PM CEST 
 //
 
 
@@ -18,7 +18,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlTransient;
-
 
 
 /**
@@ -78,10 +77,10 @@ public class MiningField {
     @XmlAttribute(name = "missingValueTreatment")
     protected MISSINGVALUETREATMENTMETHOD missingValueTreatment;
     @XmlAttribute(name = "invalidValueTreatment")
-    protected INVALIDVALUETREATMENTMETHOD invalidValueTreatment;    
-    // not serializable
-     @XmlTransient
-    private DATATYPE dataType;
+    protected INVALIDVALUETREATMENTMETHOD invalidValueTreatment;
+
+    @XmlTransient
+    private DATATYPE datatype;
 
     /**
      * Gets the value of the extension property.
@@ -366,12 +365,12 @@ public class MiningField {
     
     public DATATYPE readDataType()
     {
-        return this.dataType;
+        return datatype;
     }
     
-    public void saveDataType(DATATYPE thisType)
+    public void saveDataType(DATATYPE datatype)
     {
-        this.dataType = thisType;
+       this.datatype = datatype;
     }
 
 }

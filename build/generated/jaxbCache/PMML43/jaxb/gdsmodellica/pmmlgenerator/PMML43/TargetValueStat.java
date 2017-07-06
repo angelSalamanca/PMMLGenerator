@@ -2,7 +2,7 @@
 // Este archivo ha sido generado por la arquitectura JavaTM para la implantación de la referencia de enlace (JAXB) XML v2.2.5-2 
 // Visite <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Todas las modificaciones realizadas en este archivo se perderán si se vuelve a compilar el esquema de origen. 
-// Generado el: AM.06.18 a las 09:08:24 AM CEST 
+// Generado el: PM.07.06 a las 10:07:22 PM CEST 
 //
 
 
@@ -48,11 +48,11 @@ import javax.xml.bind.annotation.XmlType;
 public class TargetValueStat {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "AnyDistribution", namespace = "http://www.dmg.org/PMML-4_3", type = AnyDistribution.class, required = false),
-        @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_3", type = Extension.class, required = false),
-        @XmlElementRef(name = "UniformDistribution", namespace = "http://www.dmg.org/PMML-4_3", type = UniformDistribution.class, required = false),
         @XmlElementRef(name = "GaussianDistribution", namespace = "http://www.dmg.org/PMML-4_3", type = GaussianDistribution.class, required = false),
-        @XmlElementRef(name = "PoissonDistribution", namespace = "http://www.dmg.org/PMML-4_3", type = PoissonDistribution.class, required = false)
+        @XmlElementRef(name = "UniformDistribution", namespace = "http://www.dmg.org/PMML-4_3", type = UniformDistribution.class, required = false),
+        @XmlElementRef(name = "PoissonDistribution", namespace = "http://www.dmg.org/PMML-4_3", type = PoissonDistribution.class, required = false),
+        @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_3", type = Extension.class, required = false),
+        @XmlElementRef(name = "AnyDistribution", namespace = "http://www.dmg.org/PMML-4_3", type = AnyDistribution.class, required = false)
     })
     protected List<Object> content;
     @XmlAttribute(name = "value", required = true)
@@ -86,11 +86,11 @@ public class TargetValueStat {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link UniformDistribution }
-     * {@link AnyDistribution }
      * {@link GaussianDistribution }
-     * {@link Extension }
      * {@link PoissonDistribution }
+     * {@link UniformDistribution }
+     * {@link Extension }
+     * {@link AnyDistribution }
      * 
      * 
      */

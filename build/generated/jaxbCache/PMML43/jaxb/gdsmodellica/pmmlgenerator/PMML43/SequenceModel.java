@@ -2,7 +2,7 @@
 // Este archivo ha sido generado por la arquitectura JavaTM para la implantación de la referencia de enlace (JAXB) XML v2.2.5-2 
 // Visite <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Todas las modificaciones realizadas en este archivo se perderán si se vuelve a compilar el esquema de origen. 
-// Generado el: AM.06.18 a las 09:08:24 AM CEST 
+// Generado el: PM.07.06 a las 10:07:22 PM CEST 
 //
 
 
@@ -67,14 +67,14 @@ import javax.xml.bind.annotation.XmlType;
 public class SequenceModel {
 
     @XmlElementRefs({
+        @XmlElementRef(name = "LocalTransformations", namespace = "http://www.dmg.org/PMML-4_3", type = LocalTransformations.class, required = false),
+        @XmlElementRef(name = "Itemset", namespace = "http://www.dmg.org/PMML-4_3", type = Itemset.class, required = false),
         @XmlElementRef(name = "SetPredicate", namespace = "http://www.dmg.org/PMML-4_3", type = SetPredicate.class, required = false),
+        @XmlElementRef(name = "MiningSchema", namespace = "http://www.dmg.org/PMML-4_3", type = MiningSchema.class, required = false),
         @XmlElementRef(name = "Sequence", namespace = "http://www.dmg.org/PMML-4_3", type = Sequence.class, required = false),
+        @XmlElementRef(name = "SequenceRule", namespace = "http://www.dmg.org/PMML-4_3", type = SequenceRule.class, required = false),
         @XmlElementRef(name = "ModelStats", namespace = "http://www.dmg.org/PMML-4_3", type = ModelStats.class, required = false),
         @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_3", type = Extension.class, required = false),
-        @XmlElementRef(name = "Itemset", namespace = "http://www.dmg.org/PMML-4_3", type = Itemset.class, required = false),
-        @XmlElementRef(name = "MiningSchema", namespace = "http://www.dmg.org/PMML-4_3", type = MiningSchema.class, required = false),
-        @XmlElementRef(name = "SequenceRule", namespace = "http://www.dmg.org/PMML-4_3", type = SequenceRule.class, required = false),
-        @XmlElementRef(name = "LocalTransformations", namespace = "http://www.dmg.org/PMML-4_3", type = LocalTransformations.class, required = false),
         @XmlElementRef(name = "Constraints", namespace = "http://www.dmg.org/PMML-4_3", type = Constraints.class, required = false),
         @XmlElementRef(name = "Item", namespace = "http://www.dmg.org/PMML-4_3", type = Item.class, required = false)
     })
@@ -128,14 +128,14 @@ public class SequenceModel {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
+     * {@link LocalTransformations }
+     * {@link Itemset }
      * {@link SetPredicate }
+     * {@link MiningSchema }
      * {@link Sequence }
+     * {@link SequenceRule }
      * {@link ModelStats }
      * {@link Extension }
-     * {@link Itemset }
-     * {@link MiningSchema }
-     * {@link SequenceRule }
-     * {@link LocalTransformations }
      * {@link Constraints }
      * {@link Item }
      * 

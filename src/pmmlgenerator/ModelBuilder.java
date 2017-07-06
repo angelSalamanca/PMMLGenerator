@@ -51,7 +51,7 @@ public class ModelBuilder {
         {
             case "GeneralRegressionModel":
                 this.grm = new GeneralRegressionModel();
-                pmml.setOneModel(grm);                
+                pmml.getAssociationModelOrBaselineModelOrClusteringModel().add(grm);                
                 
                 grm.setModelType(nameGenerator.pickOne(General.GRMModelTypes));              
                 grm.setModelName(nameGenerator.getModelName("GRM"));                
@@ -96,9 +96,11 @@ public class ModelBuilder {
                 
                 MiningSchema ms = buildMiningSchema(true, grm.getFunctionName());
                 grm.addToContent(ms);
+                this.context.createFieldUniverse(); // update
                                  
                 LocalTransformations lt = buildLocalTransformations();
                 grm.addToContent(lt);
+                this.context.createFieldUniverse(); // update
                                
                 FactorList fl = buildFactorList(ms);
                 CovariateList cl = buildCovariateList(ms);
@@ -135,20 +137,19 @@ public class ModelBuilder {
             Boolean firstField = isSupervised;
             
             // Generation of fields based on context
-            Map<String, Object> fieldCatalog = context.getFieldNamesForMiningSchema();
+            List<FieldDescriptor> fieldCatalog = context.getFieldDescriptorsForMiningSchema();
             
-            Iterator it = fieldCatalog.entrySet().iterator();
             
-            while (it.hasNext()) {
-                // random pick
-                 Map.Entry pair = (Map.Entry)it.next();
+           for (FieldDescriptor fd : fieldCatalog)
+           {
+                // random pick                
                 double d = this.nameGenerator.doubleValue();
-                if (d<0.75 || this.context.inTransformationDictionary((String)pair.getKey()))
+                if (d<0.75 || this.context.inTransformationDictionary(fd.fieldName))
                 {
                     MiningField mField = new MiningField();
-                    String fieldName = (String)pair.getKey();
+                    String fieldName = fd.fieldName;
                     mField.setName(fieldName);
-                    this.fieldHelper  = new FieldHelper(fieldName, pair.getValue());  // value is containerj
+                    this.fieldHelper  = new FieldHelper(fieldName, fd.scope.getPMMLScope());  // value is containerj
                     mField.saveDataType(this.fieldHelper.getDataType());
                     // UsageType
                     if (firstField)
@@ -212,7 +213,7 @@ public class ModelBuilder {
                 {
                     p.setLabel("Intercept");
                 }
-                pl.saveParameter(p);
+                pl.getParameter().add(p);
             }
              
             return pl;
@@ -223,15 +224,14 @@ public class ModelBuilder {
                 FactorList fl = new FactorList();
                 
                // retrieve all candidate fields for modelling
-            Map<String, Object>fieldCatalog = this.context.getFieldNamesForModel(); // all kind of fields: MS, TD and LT
-            Iterator it = fieldCatalog.entrySet().iterator();
+            List<FieldDescriptor> fds = this.context.getFieldDescriptorsForModel(); // all kind of fields: MS, TD and LT
+            Iterator <FieldDescriptor> it = fds.iterator();
             
              while (it.hasNext()) 
             {
-                // retrieve the field
-                 Map.Entry pair = (Map.Entry)it.next();
-                String fieldName = (String)pair.getKey();
-                FieldHelper fieldhelper = new FieldHelper(fieldName, pair.getValue()); // value is container
+                FieldDescriptor fd = it.next();
+                // retrieve the field               
+                FieldHelper fieldhelper = new FieldHelper(fd.fieldName, fd.scope.getPMMLScope()); // value is container
                 
                 if (fieldhelper.getOptype()!=OPTYPE.CONTINUOUS & !fieldhelper.isTarget())
                 {
@@ -239,7 +239,7 @@ public class ModelBuilder {
                 {
                     Predictor p = new Predictor();
                     p.setName(fieldhelper.getName());
-                    fl.addPredictor(p);
+                    fl.getPredictor().add(p);
                 }
                 }
             }
@@ -252,15 +252,14 @@ public class ModelBuilder {
             CovariateList cl = new CovariateList();
             
             // retrieve all mining fields
-             Map<String, Object>fieldCatalog = this.context.getFieldNamesForModel(); // all kind of fields: MS, TD and LT
-              Iterator it = fieldCatalog.entrySet().iterator();
-              
-            while (it.hasNext()) 
+             List<FieldDescriptor> fds = this.context.getFieldDescriptorsForModel(); // all kind of fields: MS, TD and LT
+            Iterator <FieldDescriptor> it = fds.iterator();
+            
+             while (it.hasNext()) 
             {
                  // retrieve the field
-                 Map.Entry pair = (Map.Entry)it.next();
-                String fieldName = (String)pair.getKey();
-                FieldHelper fieldhelper = new FieldHelper(fieldName, pair.getValue()); // value is container
+                 FieldDescriptor fd = it.next();
+                FieldHelper fieldhelper = new FieldHelper(fd.fieldName, fd.scope.getPMMLScope()); // value is container
           
                 if (fieldhelper.getOptype()==OPTYPE.CONTINUOUS & !fieldhelper.isTarget())
                 {
@@ -268,7 +267,7 @@ public class ModelBuilder {
                 {
                     Predictor p = new Predictor();
                     p.setName(fieldhelper.getName());
-                    cl.addPredictor(p);
+                    cl.getPredictor().add(p);
                 }
                 }
             }
@@ -280,7 +279,7 @@ public class ModelBuilder {
         {
             PPMatrix ppm = new PPMatrix();
             
-            Map <String, Object> modelFields = this.context.getFieldNamesForModel();
+             List<FieldDescriptor> fds = this.context.getFieldDescriptorsForModel(); 
              paramNum = 1;
             // all factors first
             
@@ -294,7 +293,7 @@ public class ModelBuilder {
                     String fieldName = p.getName();
                    
                     // go over all values, omg!
-                    this.fieldHelper = new FieldHelper(fieldName, modelFields.get(fieldName));
+                    this.fieldHelper = new FieldHelper(fieldName, this.context.getFieldDescriptor(fieldName, grm , fds));
                     for (Value v : this.fieldHelper.getValues())
                     {
                         // No interactions first
@@ -302,7 +301,7 @@ public class ModelBuilder {
                         cell.setPredictorName(fieldName);
                         cell.setValue(v.getValue());
                         cell.setParameterName("p" + String.valueOf(paramNum));
-                        ppm.savePPCell(cell);
+                        ppm.getPPCell().add(cell);
                         paramNum +=1;
                         // 2 interactions now
                          for (int j = i+1; j<  predictors.size() ;j++) 
@@ -310,7 +309,7 @@ public class ModelBuilder {
                              Predictor q = predictors.get(j);
                              String fieldName2 = q.getName();
                             // get  Field
-                            FieldHelper fh2 = new FieldHelper(fieldName2, modelFields.get(fieldName2));
+                            FieldHelper fh2 = new FieldHelper(fieldName2, this.context.getFieldDescriptor(fieldName2, grm , fds));
                           
                              for (Value w : fh2.getValues())
                             {
@@ -324,8 +323,8 @@ public class ModelBuilder {
                                     cell2.setValue(w.getValue());
                                     cell1.setParameterName("p" + String.valueOf(paramNum));
                                     cell2.setParameterName("p" + String.valueOf(paramNum));
-                                    ppm.savePPCell(cell1);
-                                    ppm.savePPCell(cell2);
+                                    ppm.getPPCell().add(cell1);
+                                    ppm.getPPCell().add(cell2);
                                     paramNum +=1;
                              }
                             }                             
@@ -346,18 +345,16 @@ public class ModelBuilder {
                     String fieldName = p.getName();
                    
                     // go over all values, omg!
-                    this.fieldHelper = new FieldHelper(fieldName, modelFields.get(fieldName));
+                    this.fieldHelper = new FieldHelper(fieldName, this.context.getFieldDescriptor(fieldName, grm , fds));
                         // No interactions always
                         PPCell cell = new PPCell();
                         cell.setPredictorName(fieldName);
                         cell.setParameterName("p" + String.valueOf(paramNum));
                         cell.setValue("1");
-                        ppm.savePPCell(cell);
-                        paramNum +=1;
-                       
+                        ppm.getPPCell().add(cell);
+                        paramNum +=1;                       
                 }
             }    
-            
             // One to many
             paramNum -=1;
             return ppm;
@@ -378,7 +375,7 @@ public class ModelBuilder {
                     {
                         cell.setBeta(this.nameGenerator.doubleValue());
                     }
-                    pm.savePCell(cell);
+                    pm.getPCell().add(cell);
                 }  
                     break;
                 case CLASSIFICATION:
@@ -400,7 +397,7 @@ public class ModelBuilder {
                         {
                             cell.setBeta(this.nameGenerator.doubleValue());
                         }
-                        pm.savePCell(cell);
+                        pm.getPCell().add(cell);
                         if (isOrdMult && iCat==1)
                         {
                             break; // for

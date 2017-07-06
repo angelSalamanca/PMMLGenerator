@@ -2,7 +2,7 @@
 // Este archivo ha sido generado por la arquitectura JavaTM para la implantación de la referencia de enlace (JAXB) XML v2.2.5-2 
 // Visite <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Todas las modificaciones realizadas en este archivo se perderán si se vuelve a compilar el esquema de origen. 
-// Generado el: AM.06.18 a las 09:08:24 AM CEST 
+// Generado el: PM.07.06 a las 10:07:22 PM CEST 
 //
 
 
@@ -69,14 +69,14 @@ import javax.xml.bind.annotation.XmlType;
 public class AssociationModel {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "ModelStats", namespace = "http://www.dmg.org/PMML-4_3", type = ModelStats.class, required = false),
-        @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_3", type = Extension.class, required = false),
+        @XmlElementRef(name = "LocalTransformations", namespace = "http://www.dmg.org/PMML-4_3", type = LocalTransformations.class, required = false),
+        @XmlElementRef(name = "ModelVerification", namespace = "http://www.dmg.org/PMML-4_3", type = ModelVerification.class, required = false),
         @XmlElementRef(name = "Output", namespace = "http://www.dmg.org/PMML-4_3", type = Output.class, required = false),
         @XmlElementRef(name = "Itemset", namespace = "http://www.dmg.org/PMML-4_3", type = Itemset.class, required = false),
         @XmlElementRef(name = "MiningSchema", namespace = "http://www.dmg.org/PMML-4_3", type = MiningSchema.class, required = false),
         @XmlElementRef(name = "AssociationRule", namespace = "http://www.dmg.org/PMML-4_3", type = AssociationRule.class, required = false),
-        @XmlElementRef(name = "LocalTransformations", namespace = "http://www.dmg.org/PMML-4_3", type = LocalTransformations.class, required = false),
-        @XmlElementRef(name = "ModelVerification", namespace = "http://www.dmg.org/PMML-4_3", type = ModelVerification.class, required = false),
+        @XmlElementRef(name = "ModelStats", namespace = "http://www.dmg.org/PMML-4_3", type = ModelStats.class, required = false),
+        @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_3", type = Extension.class, required = false),
         @XmlElementRef(name = "Item", namespace = "http://www.dmg.org/PMML-4_3", type = Item.class, required = false)
     })
     protected List<Object> content;
@@ -135,14 +135,14 @@ public class AssociationModel {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link ModelStats }
-     * {@link Extension }
+     * {@link LocalTransformations }
+     * {@link ModelVerification }
      * {@link Output }
      * {@link Itemset }
      * {@link MiningSchema }
      * {@link AssociationRule }
-     * {@link LocalTransformations }
-     * {@link ModelVerification }
+     * {@link ModelStats }
+     * {@link Extension }
      * {@link Item }
      * 
      * 
