@@ -31,8 +31,11 @@ public class FieldHelper {
         this.generator = new NameGenerator();
     }    
     
-    public FieldHelper(String fieldName, Object container) throws Exception
+    public FieldHelper(String fieldName, Scope scope) throws Exception
     {
+        Object container = scope.PMMLScope;
+        PMML pmml = scope.getRootContainer();
+        
         String containerClass = container.getClass().getSimpleName();
         Object content;
         
@@ -40,7 +43,7 @@ public class FieldHelper {
         switch(containerClass)
         {
             case "PMML":
-                PMML pmml = (PMML)container;
+                
                  // DataField ?
                 List<DataField> dataFields = pmml.getDataDictionary().getDataField();
                 for (DataField df : dataFields) {
@@ -62,7 +65,8 @@ public class FieldHelper {
             break;   
                 
           case "GeneralRegressionModel":
-                   content = ((GeneralRegressionModel)container).getFromContent("MiningSchema");
+                    GeneralRegressionModel grm = (GeneralRegressionModel)container;
+                   content = grm.getFromContent("MiningSchema");
                     for (MiningField mf : ((MiningSchema)content).getMiningField()) {
                     if (mf.getName() == fieldName)
                     {
@@ -71,16 +75,25 @@ public class FieldHelper {
                     }
                 }
           
-            // DerivedField ?
-            content  = ((GeneralRegressionModel)container).getFromContent("LocalTransformations");
-            for (DerivedField derf : ((LocalTransformations)content).getDerivedField()) {
+               // DerivedField in LT?                
+                content  = grm.getFromContent("LocalTransformations");
+                for (DerivedField derf : ((LocalTransformations)content).getDerivedField()) {
                 if (derf.getName() == fieldName)
                 {
                     this.theField = derf;
                     break  containerswitch;
                 }
             }
-                
+             
+          // DerivedField in TD?
+            
+            for (DerivedField derf : pmml.getTransformationDictionary().getDerivedField()) {
+                if (derf.getName() == fieldName)
+                {
+                    this.theField = derf;
+                    break  containerswitch;
+                }
+            }
             default:    //MODEL            
                 throw new Exception ("Unexpected model " + containerClass);
             }            

@@ -759,10 +759,18 @@ public class GeneralRegressionModel {
     
     public void addToContent(Object item)
     {
+        if (content == null) {
+            content = new ArrayList<Object>();
+        }
         this.content.add(item);
     }
 
     public Object getFromContent(String name){
+        
+        if (content == null)
+        {
+            return null;
+        }
         
         for (Object item: content)
         {

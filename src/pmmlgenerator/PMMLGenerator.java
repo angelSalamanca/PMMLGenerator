@@ -80,8 +80,9 @@ public class PMMLGenerator {
             {
                   pmml = new PMML();
                   sentence = new Sentence();
-                  Scope pmmlScope = new Scope("", pmml, "PMML");
+                  Scope pmmlScope = new Scope("", pmml, "PMML", null);
                   context = new Context(pmmlScope);
+                  pmmlScope.setContext(context);
                   General.attributeConstraintUniverse = (new ConstraintGenerator()).LoadAttributeConstraints();               
         
                 pmml.setVersion("4.2");
@@ -117,6 +118,7 @@ public class PMMLGenerator {
             }    
             catch (Exception e)
             {
+                System.out.println(e.getMessage());
                 return false;
             }
     }
@@ -171,13 +173,14 @@ public class PMMLGenerator {
         dd.setNumberOfFields(numOfFields);
         
         pmml.setDataDictionary(dd);
+        System.out.println("Data Dictionary built");
     }
     
     public static void buildTransformationDictionary() throws Exception
     {
         TransformationDictionaryBuilder tdb = new TransformationDictionaryBuilder(pmml, context);
         pmml.setTransformationDictionary(tdb.build());
-        int a =1; 
+        System.out.println("Transformation Dictionary built");
     }
     
     public static void buildModel() throws Exception

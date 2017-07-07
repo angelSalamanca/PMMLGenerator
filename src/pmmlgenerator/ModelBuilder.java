@@ -30,6 +30,7 @@ public class ModelBuilder {
     private List<String> categories;
     private GeneralRegressionModel grm;
     private Integer paramNum;
+    private ModelContext modelContext;
    
     
     public ModelBuilder(PMML aPMML, Context thisContext)
@@ -43,21 +44,24 @@ public class ModelBuilder {
     public void build() throws Exception
     {
         String modelFamily = nameGenerator.pickOne(General.models);
-        
+        modelFamily = "TreeModel";
         
          numTargetCategories = 2; // binomial by default
         
         switch(modelFamily)
         {
             case "GeneralRegressionModel":
+                System.out.println("GeneralRegressionModel:");
                 this.grm = new GeneralRegressionModel();
-                pmml.getAssociationModelOrBaselineModelOrClusteringModel().add(grm);                
+                pmml.getAssociationModelOrBaselineModelOrClusteringModel().add(grm);               
+                modelContext = new ModelContext(grm, this.context);
                 
                 grm.setModelType(nameGenerator.pickOne(General.GRMModelTypes));              
                 grm.setModelName(nameGenerator.getModelName("GRM"));                
                 
-                Scope grmScope = new Scope(grm.getModelName(), grm, grm.getClass().getSimpleName());
-                this.context.setCurrentScope(grmScope);               
+                Scope grmScope = new Scope(grm.getModelName(), grm, grm.getClass().getSimpleName(), this.context);
+                this.context.setCurrentScope(grmScope);       
+                grmScope.setModelContext(modelContext);
                 
                 // Constraint on functionName
                 available = General.attributeConstraintUniverse.getAvailableValues(modelFamily, "functionName", "modelType", grm.getModelType(), General.GRMFunctions);
@@ -98,8 +102,10 @@ public class ModelBuilder {
                 grm.addToContent(ms);
                 this.context.createFieldUniverse(); // update
                                  
-                LocalTransformations lt = buildLocalTransformations();
+                LocalTransformationBuilder ltb = new LocalTransformationBuilder(this.modelContext);
+                LocalTransformations lt = ltb.build();
                 grm.addToContent(lt);
+              
                 this.context.createFieldUniverse(); // update
                                
                 FactorList fl = buildFactorList(ms);
@@ -122,15 +128,24 @@ public class ModelBuilder {
                         grm.setTargetReferenceCategory(String.valueOf(this.numTargetCategories));
                   }
                 
+                  OutputBuilder ob = new OutputBuilder();
+                  grm.addToContent(ob.build(this.modelContext));
                 break;
                 
+            case "TreeModel":
+                System.out.println("TreeModel:");
+                TreeModel treeModel = new TreeModel();                 
+                modelContext = new ModelContext(treeModel, this.context);
+                modelContext.buildTreeModel();
+                pmml.getAssociationModelOrBaselineModelOrClusteringModel().add(treeModel);
+                
+                break;
             default:
                 throw new Exception("Not implemented");
         }
     }
-    
-        
-        private MiningSchema buildMiningSchema(Boolean isSupervised, MININGFUNCTION modelFunction) throws Exception
+            
+    private MiningSchema buildMiningSchema(Boolean isSupervised, MININGFUNCTION modelFunction) throws Exception
         {
             MiningSchema ms = new MiningSchema();
             List<MiningField> miningFields = ms.getMiningField();
@@ -149,7 +164,7 @@ public class ModelBuilder {
                     MiningField mField = new MiningField();
                     String fieldName = fd.fieldName;
                     mField.setName(fieldName);
-                    this.fieldHelper  = new FieldHelper(fieldName, fd.scope.getPMMLScope());  // value is containerj
+                    this.fieldHelper  = new FieldHelper(fieldName, fd.scope);  // value is containerj
                     mField.saveDataType(this.fieldHelper.getDataType());
                     // UsageType
                     if (firstField)
@@ -159,6 +174,7 @@ public class ModelBuilder {
                             firstField = false;
                             mField.setUsageType(FIELDUSAGETYPE.TARGET);
                             this.targetField = mField;
+                            modelContext.setTargetField(this.targetField);
                             List<Value> values  = this.fieldHelper.getValues();
                             numTargetCategories = values.size();
                             categories = new ArrayList<String>();
@@ -166,6 +182,7 @@ public class ModelBuilder {
                             {
                                 categories.add(values.get(j).getValue());
                             }
+                            this.modelContext.setCategories(categories);
                         }                        
                     }
                     else
@@ -178,7 +195,7 @@ public class ModelBuilder {
                     
                    if(mField.getUsageType() == FIELDUSAGETYPE.TARGET | this.fieldHelper.isGRMActiveCompatible(modelFunction))
                    {
-                   mField.setOptype(this.fieldHelper.getOptype());
+                              mField.setOptype(this.fieldHelper.getOptype());
                    }       
                   
                    // missing value replacement, only sometimes
@@ -190,7 +207,7 @@ public class ModelBuilder {
                     miningFields.add(mField);
                 }  
           }           
-            
+            System.out.println(" Mining Schema built");
             return ms;
         }
         
@@ -198,6 +215,7 @@ public class ModelBuilder {
         {
             LocalTransformations lt = new LocalTransformations();
             
+            System.out.println(" Local Transformations built");
             return lt;
         }
         
@@ -215,7 +233,7 @@ public class ModelBuilder {
                 }
                 pl.getParameter().add(p);
             }
-             
+             System.out.println(" Parameter List built");
             return pl;
         }
         
@@ -231,7 +249,7 @@ public class ModelBuilder {
             {
                 FieldDescriptor fd = it.next();
                 // retrieve the field               
-                FieldHelper fieldhelper = new FieldHelper(fd.fieldName, fd.scope.getPMMLScope()); // value is container
+                FieldHelper fieldhelper = new FieldHelper(fd.fieldName, fd.scope); // value is container
                 
                 if (fieldhelper.getOptype()!=OPTYPE.CONTINUOUS & !fieldhelper.isTarget())
                 {
@@ -243,6 +261,7 @@ public class ModelBuilder {
                 }
                 }
             }
+                System.out.println(" Factor List built");
                 return fl;
             }
   
@@ -259,7 +278,7 @@ public class ModelBuilder {
             {
                  // retrieve the field
                  FieldDescriptor fd = it.next();
-                FieldHelper fieldhelper = new FieldHelper(fd.fieldName, fd.scope.getPMMLScope()); // value is container
+                FieldHelper fieldhelper = new FieldHelper(fd.fieldName, fd.scope); // value is container
           
                 if (fieldhelper.getOptype()==OPTYPE.CONTINUOUS & !fieldhelper.isTarget())
                 {
@@ -271,7 +290,7 @@ public class ModelBuilder {
                 }
                 }
             }
-            
+            System.out.println(" CovariateList built");                
             return cl;
         }
                 
@@ -293,7 +312,7 @@ public class ModelBuilder {
                     String fieldName = p.getName();
                    
                     // go over all values, omg!
-                    this.fieldHelper = new FieldHelper(fieldName, this.context.getFieldDescriptor(fieldName, grm , fds));
+                    this.fieldHelper = new FieldHelper(fieldName, this.context.getFieldDescriptor(fieldName, grm , fds).scope);
                     for (Value v : this.fieldHelper.getValues())
                     {
                         // No interactions first
@@ -309,7 +328,7 @@ public class ModelBuilder {
                              Predictor q = predictors.get(j);
                              String fieldName2 = q.getName();
                             // get  Field
-                            FieldHelper fh2 = new FieldHelper(fieldName2, this.context.getFieldDescriptor(fieldName2, grm , fds));
+                            FieldHelper fh2 = new FieldHelper(fieldName2, this.context.getFieldDescriptor(fieldName2, grm , fds).scope);
                           
                              for (Value w : fh2.getValues())
                             {
@@ -345,7 +364,7 @@ public class ModelBuilder {
                     String fieldName = p.getName();
                    
                     // go over all values, omg!
-                    this.fieldHelper = new FieldHelper(fieldName, this.context.getFieldDescriptor(fieldName, grm , fds));
+                    this.fieldHelper = new FieldHelper(fieldName, this.context.getFieldDescriptor(fieldName, grm , fds).scope);
                         // No interactions always
                         PPCell cell = new PPCell();
                         cell.setPredictorName(fieldName);
@@ -357,6 +376,7 @@ public class ModelBuilder {
             }    
             // One to many
             paramNum -=1;
+            System.out.println(" PPMatrix built");
             return ppm;
         }
                 
@@ -408,7 +428,7 @@ public class ModelBuilder {
                     
             }
             
-            
+            System.out.println(" ParamMatrix built");
             return pm;
         }
         

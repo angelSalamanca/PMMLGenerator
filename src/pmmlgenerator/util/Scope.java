@@ -7,6 +7,7 @@ package pmmlgenerator.util;
 
 import java.util.*;
 import jaxb.gdsmodellica.pmmlgenerator.PMML42.*; 
+import pmmlgenerator.ModelContext;
 
 /**
  *
@@ -20,14 +21,17 @@ public class Scope {
     Object PMMLScope;
     String scopeClass;
     NameGenerator generator;
+    Context context;
+    ModelContext modelContext;
     
 
-    public Scope(String scopeName, Object PMMLObject, String thisClass)
+    public Scope(String scopeName, Object PMMLObject, String thisClass, Context thisContext)
     {
         children = new ArrayList<Scope>();
         name = scopeName;
         PMMLScope = PMMLObject;
         scopeClass = thisClass;
+        context = thisContext;
         generator = new NameGenerator();        
     }
     
@@ -151,4 +155,18 @@ public class Scope {
         return level;
     }
     
+    public PMML getRootContainer()
+    {
+        return (PMML)this.context.getRootScope().PMMLScope;
+    }
+
+    public void setContext(Context thisContext)
+    {
+        this.context = thisContext;
+    }
+    
+      public void setModelContext(ModelContext thisContext)
+    {
+        this.modelContext = thisContext;
+    }
 }

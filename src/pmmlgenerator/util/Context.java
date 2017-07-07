@@ -153,7 +153,7 @@ public class Context {
        
        while (it.hasNext()) {             
            FieldDescriptor fd = it.next(); 
-           FieldHelper fieldhelper = new FieldHelper(fd.fieldName, fd.scope.PMMLScope);
+           FieldHelper fieldhelper = new FieldHelper(fd.fieldName, fd.scope);
             if (!fieldhelper.getDataType().equals(datatype))
                 {
                     it.remove();

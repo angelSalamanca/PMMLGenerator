@@ -30,6 +30,16 @@ public class ConstraintGenerator {
                     
             myUniverse.addConstraint(constraint);
             
+            constraint = new AttributeConstraint("TreeModel", "functionName", "modelType");
+            constraint.addForbidden("CLASSIFICATION", General.GRMModelTypes[0]);
+            constraint.addForbidden("CLASSIFICATION", General.GRMModelTypes[1]);
+            constraint.addForbidden("REGRESSION", General.GRMModelTypes[2]);
+            constraint.addForbidden("REGRESSION", General.GRMModelTypes[3]);
+            constraint.addForbidden("REGRESSION", General.GRMModelTypes[4]);
+            // COX not implemented constraint.addForbidden("REGRESSION", General.GRMModelTypes[5]);;
+                    
+            myUniverse.addConstraint(constraint);
+            
             
             
             return myUniverse;

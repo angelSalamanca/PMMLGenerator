@@ -51,6 +51,16 @@ public class NameGenerator {
                            
         return sb.toString();
     }
+      
+         public String getOutputFieldName()
+    {
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append("OutputField ");
+        sb.append(getVarNum());
+                           
+        return sb.toString();
+    }
     
     
     public String getModelName(String modelFamily)

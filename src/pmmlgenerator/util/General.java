@@ -11,7 +11,9 @@ package pmmlgenerator.util;
  */
 public class General {
     
-    public static String[] models = {"GeneralRegressionModel"};
+    public static String[] models = {"GeneralRegressionModel", "TreeModel"};
+    public static  String[] relationalOperators = {"equal", "notEqual", "lessThan", "lessOrEqual", "greaterThan", "greaterOrEqual", "isMissing", "isNotMissing"};
+    
     public static String[] GRMModelTypes = {"regression", "generalLinear","multinomialLogistic","ordinalMultinomial","generalizedLinear"}; // TODO ,"CoxRegression"};
     public static  String[] GRMFunctions = {"CLASSIFICATION","REGRESSION"}; // classification and regression
     public static int[] GRMcumLinkFunctions = {0,1,2,3,4}; // all available
