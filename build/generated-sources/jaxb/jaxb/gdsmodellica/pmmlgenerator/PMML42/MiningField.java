@@ -372,5 +372,7 @@ public class MiningField {
     {
        this.datatype = datatype;
     }
+    
+
 
 }

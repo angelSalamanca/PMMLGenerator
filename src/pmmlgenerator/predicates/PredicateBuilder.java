@@ -15,6 +15,8 @@ import pmmlgenerator.util.*;
  */
 public abstract class PredicateBuilder {
 
+    
+    
     abstract Object build(ModelContext modelContext) throws Exception;
     
             

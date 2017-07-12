@@ -17,6 +17,7 @@ public class NameGenerator {
     
     private Random randomGenerator;
     private Map<String,Integer> fieldNums;
+    private String derivedFieldPreffix = "";
    
     public NameGenerator()
     {
@@ -44,7 +45,7 @@ public class NameGenerator {
     {
         StringBuilder sb = new StringBuilder();
         
-        sb.append("DerivedField ");
+        sb.append(this.derivedFieldPreffix + "DerivedField ");
         sb.append(fieldType);
         sb.append(" ");
         sb.append(getVarNum());
@@ -52,11 +53,26 @@ public class NameGenerator {
         return sb.toString();
     }
       
+      public void setDerivedPreffix(String preffix)
+      {
+          this.derivedFieldPreffix = preffix;
+      }
+      
          public String getOutputFieldName()
     {
         StringBuilder sb = new StringBuilder();
         
         sb.append("OutputField ");
+        sb.append(getVarNum());
+                           
+        return sb.toString();
+    }
+         
+    public String getDefineFunctionName()
+    {
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append("User Function ");
         sb.append(getVarNum());
                            
         return sb.toString();
@@ -123,8 +139,26 @@ public class NameGenerator {
                 {values.add(generated);}
         }
         Collections.sort(values);
+        
         return values;
         
+    }
+    
+    public List<Integer> intCutoffs(Integer totalObs, Integer numCuts )
+    {
+        List<Integer> cutoffs = new ArrayList<Integer>();
+        Integer a = 0;
+        Integer b = totalObs;
+        
+        for (int i =1; i<numCuts; i++)
+        {
+            Integer bin = this.intValue(0, b-a);            
+            cutoffs.add(bin);
+            a = a+ bin;
+         }
+        // all that remains
+        cutoffs.add(totalObs - a);
+        return cutoffs;
     }
     
      public ArrayList<Double> doubleValues(int numValues)
@@ -218,8 +252,7 @@ public class NameGenerator {
           Double d = randomGenerator.nextDouble()*(b-a)+a;
          return (double)Math.round(d* 10000000d) / 10000000d;
      }
-     
-     
+          
      public Boolean booleanValue()
      {
          return randomGenerator.nextBoolean();
@@ -323,9 +356,16 @@ public class NameGenerator {
                     return String.valueOf(this.intValue(-50,50));
                 case FLOAT:
                 case DOUBLE:
-                    return String.valueOf(this.doubleValue(-50,50));
+                    double d = this.doubleValue(-50,50);
+                    return String.valueOf(d);
                 default:
                       throw new Exception("getValue");
             }
+        }
+        
+        public DATATYPE pickDataType()
+        {
+            Integer i = this.intValue(0, DATATYPE.values().length);
+            return DATATYPE.values()[i];
         }
 }

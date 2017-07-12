@@ -16,7 +16,7 @@ import pmmlgenerator.util.*;
  */
 public class SimplePredicateBuilder extends PredicateBuilder {
 
-        private SimplePredicate directPredicate;
+      private SimplePredicate directPredicate;
     
       public Object build(ModelContext modelContext) throws Exception
       {
@@ -24,14 +24,21 @@ public class SimplePredicateBuilder extends PredicateBuilder {
           
           List<FieldDescriptor> fds = modelContext.context.getFieldDescriptorsForModel(); // all kind of fields: MS, TD and LT
           FieldDescriptor fd = fds.get(modelContext.generator.intValue(0, fds.size()-1));
-          
+          FieldHelper fh = new FieldHelper(fd.fieldName, fd.scope);
           sp.setField(fd.fieldName);
-          sp.setOperator(modelContext.generator.pickOne(General.relationalOperators));
+          DATATYPE datatype = fh.getDataType();
+           
+          if (datatype == DATATYPE.STRING)
+          {
+               sp.setOperator(modelContext.generator.pickOne(General.stringRelationalOperators));
+          }
+          else
+          {
+            sp.setOperator(modelContext.generator.pickOne(General.relationalOperators));
+          }
           
           if((!sp.getOperator().equals("isMissing")) && !(sp.getOperator().equals("isNotMissing")))
-          {
-                    FieldHelper fh = new FieldHelper(fd.fieldName, fd.scope);
-                    DATATYPE datatype = fh.getDataType();
+          {                    
                     sp.setValue(modelContext.generator.getValue(datatype));
           }          
           
@@ -60,7 +67,7 @@ public class SimplePredicateBuilder extends PredicateBuilder {
                 case "greaterOrEqual":
                     newOp = "lessThan";    
                     break;
-                 case "lesesOrEqual":
+                 case "lessOrEqual":
                     newOp =  "greaterThan"; 
                     break;
                 case "greaterThan":

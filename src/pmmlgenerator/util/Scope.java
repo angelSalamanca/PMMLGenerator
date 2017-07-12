@@ -23,7 +23,7 @@ public class Scope {
     NameGenerator generator;
     Context context;
     ModelContext modelContext;
-    
+    ContentUtil cu;
 
     public Scope(String scopeName, Object PMMLObject, String thisClass, Context thisContext)
     {
@@ -32,7 +32,8 @@ public class Scope {
         PMMLScope = PMMLObject;
         scopeClass = thisClass;
         context = thisContext;
-        generator = new NameGenerator();        
+        generator = new NameGenerator();       
+        cu = new ContentUtil();
     }
     
     public Scope getParent()
@@ -70,23 +71,37 @@ public class Scope {
     
     public List<DerivedField> readLocalDerivedFields() throws Exception
     {
+        LocalTransformations lt;
+      
         switch (this.PMMLScope.getClass().getSimpleName())
         {
             case "GeneralRegressionModel":
                 GeneralRegressionModel grm = (GeneralRegressionModel)PMMLScope;
-                LocalTransformations lt = (LocalTransformations)grm.getFromContent("LocalTransformations");
-                if (lt!=null)
-                {
-                  return lt.getDerivedField();
-                }
-            else
-                {
-                    return null;
-                }
+                lt = (LocalTransformations)cu.getFromContent(grm.getContent(),"LocalTransformations");
+                break;
+               
+            case "TreeModel":
+                TreeModel treemodel = (TreeModel)PMMLScope;
+                lt = (LocalTransformations)cu.getFromContent(treemodel.getContent(),"LocalTransformations");
+                break;
                 
+             case "RegressionModel":
+                RegressionModel rm = (RegressionModel)PMMLScope;
+                lt = (LocalTransformations)cu.getFromContent(rm.getContent(),"LocalTransformations");
+                break;    
+            
             default:
                return null;
         }
+
+         if (lt!=null)
+                {
+                  return lt.getDerivedField();
+                }
+                 else
+                {
+                    return null;
+                }
     }    
     
     public List<MiningField> readMiningFields() throws Exception
@@ -114,6 +129,15 @@ public class Scope {
                 if (ms == null) { 
                     return null;}
                 return (MiningSchema)ms;   
+            
+                 case "TreeModel":
+                TreeModel treeModel = (TreeModel)PMMLScope;
+                ms = this.cu.getFromContent(treeModel.getContent(), "MiningSchema");   
+                if (ms == null) { 
+                    return null;}
+                return (MiningSchema)ms;   
+            
+             
              default:
                return null;
          }
@@ -121,21 +145,22 @@ public class Scope {
     
     public LocalTransformations getLocalTransformations()
     {
-        // refactor with abstract class Model
+        LocalTransformations lt;
+         // refactor with abstract class Model
          switch (this.PMMLScope.getClass().getSimpleName())
          {
              case "GeneralRegressionModel":
                 GeneralRegressionModel grm = (GeneralRegressionModel)PMMLScope;
-                Object lt = grm.getFromContent("LocalTransformations");  
-                if (lt == null)
-                { 
-                    return null;
-                }                
-                return (LocalTransformations)lt;
-                 
+                lt = (LocalTransformations)cu.getFromContent(grm.getContent(),"LocalTransformations");
+                break;
+             case "TreeModel":
+                TreeModel treemodel = (TreeModel)PMMLScope;
+                lt = (LocalTransformations)cu.getFromContent(treemodel.getContent(),"LocalTransformations");
+                break;    
              default:
                return null;
          }
+                return lt;
     }
     
     public Object getPMMLScope()
@@ -169,4 +194,10 @@ public class Scope {
     {
         this.modelContext = thisContext;
     }
+
+ public Boolean isDefineFunction()
+       {
+           return this.scopeClass.equals("DefineFunction");
+       }
+
 }

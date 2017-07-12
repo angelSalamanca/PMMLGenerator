@@ -19,7 +19,7 @@ import pmmlgenerator.util.Scope;
 public class ModelContext {
     
     Object PMMLModel;
-    GeneralRegressionModel grm;
+    private GeneralRegressionModel grm;
     private TreeModel treeModel;
     private MiningField targetField;
     private List<String> categories;
@@ -36,6 +36,11 @@ public class ModelContext {
     public void setTargetField(MiningField field)
     {
         this.targetField = field;
+    }
+    
+    public Integer numTargetCategories()
+    {
+        return this.categories.size();
     }
     
     public ModelContext(Object thisPMMLModel, Context thiscontext) throws Exception
@@ -71,6 +76,7 @@ public class ModelContext {
         switch(theClass)
         {
             case "GeneralRegressionModel":
+            case "TreeModel":
                 return true;
             default:
                 throw new Exception("Unexpected class");
@@ -82,9 +88,18 @@ public class ModelContext {
         String theClass = this.PMMLModel.getClass().getSimpleName();
         switch(theClass)
         {
-            case "GeneralRegressionModel":
-                
+            case "GeneralRegressionModel":            
                 if (grm.getFunctionName().equals(MININGFUNCTION.CLASSIFICATION))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            
+            case "TreeModel":    
+                if (treeModel.getFunctionName().equals(MININGFUNCTION.CLASSIFICATION))
                 {
                     return true;
                 }
@@ -108,6 +123,23 @@ public class ModelContext {
           this.categories = cats;
       }
       
+      public Boolean isRegression() throws Exception
+      {
+           String theClass = this.PMMLModel.getClass().getSimpleName();
+           switch(theClass)
+        {
+               case "GeneralRegressionModel":
+                   return grm.getFunctionName() == MININGFUNCTION.REGRESSION;
+                   
+               case "TreeModel":
+                   return treeModel.getFunctionName() == MININGFUNCTION.REGRESSION;
+                   
+                default:
+                    throw new Exception("Unexpected class");     
+                   
+        }
+      }
+      
       public TreeModel buildTreeModel() throws Exception
       {
             this.treeModel.setModelName(generator.getModelName("Tree")); 
@@ -118,22 +150,41 @@ public class ModelContext {
             // Constraint on functionName
             
             this.treeModel.setFunctionName(MININGFUNCTION.valueOf(generator.pickOne(General.GRMFunctions)));
+            System.out.println(" Function Name: " + treeModel.getFunctionName().toString());
             this.treeModel.setAlgorithmName(sentence.getSentence(2));
+            this.treeModel.setNoTrueChildStrategy(NOTRUECHILDSTRATEGY.valueOf(generator.pickOne(General.treeNoTrueChildStrategies)));
             
             // MiningSchema
              MiningSchemaBuilder msb = new MiningSchemaBuilder(true, this);
              MiningSchema ms = msb.build(treeModel.getFunctionName());
              treeModel.addToContent(ms);
              this.context.createFieldUniverse(); // update
+      
+                OutputBuilder ob = new OutputBuilder();
+               treeModel.addToContent(ob.build(this));
+                
              // Local Transformations
-              LocalTransformationBuilder ltb = new LocalTransformationBuilder(this);
-              LocalTransformations lt = ltb.build();
-              treeModel.addToContent(lt);
+              TransformationDictionaryBuilder tdb = new TransformationDictionaryBuilder(this.context);
+              treeModel.addToContent(tdb.buildLocal());
               this.context.createFieldUniverse(); // update
               
               NodeBuilder nb = new NodeBuilder(this);              
-              treeModel.addToContent(nb.build(true));
+              treeModel.addToContent(nb.build(null, generator.intValue(1000,10000)).get(0));
              
+            
             return this.treeModel;
       }
+      
+      public String getTargetReferenceCategory(Scope scope) throws Exception
+      {
+          FieldHelper  fh = new FieldHelper(this.targetField.getName(), scope);
+          List<Value> values = fh.getValues();
+          Value lastValue = values.get(values.size()-1);
+          
+          return lastValue.getValue();
+          
+          
+      }
+      
+      
 }

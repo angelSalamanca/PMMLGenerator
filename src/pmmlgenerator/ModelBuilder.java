@@ -44,7 +44,7 @@ public class ModelBuilder {
     public void build() throws Exception
     {
         String modelFamily = nameGenerator.pickOne(General.models);
-        modelFamily = "TreeModel";
+        // modelFamily = "TreeModel";
         
          numTargetCategories = 2; // binomial by default
         
@@ -66,6 +66,7 @@ public class ModelBuilder {
                 // Constraint on functionName
                 available = General.attributeConstraintUniverse.getAvailableValues(modelFamily, "functionName", "modelType", grm.getModelType(), General.GRMFunctions);
                 grm.setFunctionName(MININGFUNCTION.valueOf(nameGenerator.pickOne(available)));
+                 System.out.println(" Function Name: " + grm.getFunctionName().toString());    
                 
                 if (grm.getModelType().equals("ordinalMultinomial"))
                 {
@@ -101,12 +102,14 @@ public class ModelBuilder {
                 MiningSchema ms = buildMiningSchema(true, grm.getFunctionName());
                 grm.addToContent(ms);
                 this.context.createFieldUniverse(); // update
+                
+                 OutputBuilder ob = new OutputBuilder();
+                 grm.addToContent(ob.build(this.modelContext));
                                  
-                LocalTransformationBuilder ltb = new LocalTransformationBuilder(this.modelContext);
-                LocalTransformations lt = ltb.build();
-                grm.addToContent(lt);
-              
-                this.context.createFieldUniverse(); // update
+                // Local Transformations
+               TransformationDictionaryBuilder tdb = new TransformationDictionaryBuilder(this.context);
+               grm.addToContent(tdb.buildLocal());
+               this.context.createFieldUniverse(); // update
                                
                 FactorList fl = buildFactorList(ms);
                 CovariateList cl = buildCovariateList(ms);
@@ -125,11 +128,10 @@ public class ModelBuilder {
                   
                 // Get # of categories from target field
                   if (grm.getFunctionName() ==MININGFUNCTION.CLASSIFICATION ){
-                        grm.setTargetReferenceCategory(String.valueOf(this.numTargetCategories));
+                        grm.setTargetReferenceCategory(this.categories.get(categories.size()-1));
                   }
                 
-                  OutputBuilder ob = new OutputBuilder();
-                  grm.addToContent(ob.build(this.modelContext));
+                 
                 break;
                 
             case "TreeModel":
@@ -159,7 +161,7 @@ public class ModelBuilder {
            {
                 // random pick                
                 double d = this.nameGenerator.doubleValue();
-                if (d<0.75 || this.context.inTransformationDictionary(fd.fieldName))
+                if (d<0.75 || this.context.isTDAffected(fd.fieldName))
                 {
                     MiningField mField = new MiningField();
                     String fieldName = fd.fieldName;

@@ -43,7 +43,7 @@ public class PMMLGenerator {
         numRecords = 10;
         pmmlPath = "D:\\";
         
-        try
+       try
         {
             if (args.length==3)
             {
@@ -74,10 +74,10 @@ public class PMMLGenerator {
          System.out.println("Generation completed with " + String.valueOf(successes) + " PMML files");        
     }
     
-    private static Boolean generate()
+    private static Boolean generate() throws Exception
     {
             try
-            {
+           {
                   pmml = new PMML();
                   sentence = new Sentence();
                   Scope pmmlScope = new Scope("", pmml, "PMML", null);
@@ -99,7 +99,12 @@ public class PMMLGenerator {
                 
         // serialize PMML
                 NameGenerator generator = new NameGenerator();
-                PMMLwriter writer = new PMMLwriter(pmmlPath, String.valueOf(generator.intValue(10000, 99999)));
+                Integer pmmlId = 999;
+                if (numPmmlFiles > 1)
+                {
+                    pmmlId = generator.intValue(10000,99999);
+                }
+                PMMLwriter writer = new PMMLwriter(pmmlPath, String.valueOf(pmmlId));
                 try
                 {
                     writer.write(pmml);
@@ -115,11 +120,11 @@ public class PMMLGenerator {
                 System.out.println("Data file written");
       
                 return true;
-            }    
-            catch (Exception e)
-            {
-                System.out.println(e.getMessage());
-                return false;
+           }    
+           catch (Exception e)
+           {
+               System.out.println(e.getMessage());
+               return false;
             }
     }
     
@@ -178,7 +183,7 @@ public class PMMLGenerator {
     
     public static void buildTransformationDictionary() throws Exception
     {
-        TransformationDictionaryBuilder tdb = new TransformationDictionaryBuilder(pmml, context);
+        TransformationDictionaryBuilder tdb = new TransformationDictionaryBuilder(context);
         pmml.setTransformationDictionary(tdb.build());
         System.out.println("Transformation Dictionary built");
     }

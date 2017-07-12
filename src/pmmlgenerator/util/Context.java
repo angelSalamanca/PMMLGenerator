@@ -21,6 +21,9 @@ public class Context {
    private List<BuiltinFunction> builtInFunctions;
    private List<BuiltinFunction> stringBuiltInFunctions;
    private FieldUniverse fieldUniverse;
+   private Map<String, Boolean> tdAffectedFields;
+   private List<FieldDescriptor> fds;
+   private Integer selected;
    
    
    public Context(Scope scope) throws Exception
@@ -30,6 +33,7 @@ public class Context {
        this.builtInFunctions = populateBuiltInFunctions();
        this.stringBuiltInFunctions = populateStringBuiltinFunctions();
        this.setCurrentScope(scope);
+       this.tdAffectedFields = new HashMap<String, Boolean>();
    }
    
    public Map<String, Object> getFieldNamesForMiningSchema() throws Exception
@@ -79,21 +83,28 @@ public class Context {
    
    public List<FieldDescriptor> getFieldDescriptorsForTransformation() throws Exception
    {
-        List<FieldDescriptor> fds;
-       
        // DD or MiningSchema
+       List<FieldDescriptor> fdl;
        if (this.currentScope.isRoot())
        {
-           fds = this.fieldUniverse.getFieldDescriptors(FieldUniverse.FieldType.DataField);
+           fdl =this.fieldUniverse.getFieldDescriptors(FieldUniverse.FieldType.DataField);
        }
        else
        {
-          // names = this.getMiningFieldNames();
-            fds=this.fieldUniverse.getFieldDescriptors(FieldUniverse.FieldType.MiningField, currentScope);
+       if (this.currentScope.isDefineFunction())
+       {
+           fdl= this.fieldUniverse.getFieldDescriptors(FieldType.ParameterField);
        }
-       //
-       
-       return fds;
+      else
+       {
+            fdl= this.fieldUniverse.getFieldDescriptors(FieldUniverse.FieldType.MiningField, currentScope);
+       }
+       }
+       if (fdl.size()==0)
+       {
+           int a =1+1;
+       }
+       return fdl;
    }
    
   public List<FieldDescriptor> getFieldDescriptorsForModel() throws Exception
@@ -124,10 +135,17 @@ public class Context {
    {
        if (this.currentScope != null) {
            this.currentScope.addChild(cScope);
+           cScope.setParent(this.currentScope);
        }
        
        this.currentScope = cScope;       
        this.createFieldUniverse();       
+   }
+   
+   public void backToParent() throws Exception
+   {
+       this.currentScope = this.currentScope.getParent();
+       this.createFieldUniverse();
    }
    
    public void createFieldUniverse() throws Exception
@@ -135,10 +153,26 @@ public class Context {
        this.fieldUniverse = new FieldUniverse(this);
    }
    
-   public FieldDescriptor randomField(DATATYPE datatype, Boolean forModel, Boolean allValid) throws Exception
+   public FieldDescriptor randomField(DATATYPE datatype, Boolean forModel, Boolean allValid,Boolean valuesCompulsory) throws Exception
+   {
+       FieldDescriptor fd = null;
+       Integer tries = 0;
+       while (fd==null)
+       {
+           fd = internalRandomField(datatype, forModel, allValid, valuesCompulsory);
+           tries +=1;
+           if (tries>9)
+           {
+               throw new Exception("Unable to generate random field");
+           }
+       }
+       return fd;
+   }
+   
+   private FieldDescriptor internalRandomField(DATATYPE datatype, Boolean forModel, Boolean allValid, Boolean valuesCompulsory) throws Exception
            
    {
-       List<FieldDescriptor> fds;
+      
        if (forModel)
        {
            fds  = this.getFieldDescriptorsForTransformation();
@@ -147,7 +181,7 @@ public class Context {
        {
            fds = this.getFieldDescriptorsForMiningSchema();
        }
-       
+       Integer totalNumOfFields = fds.size();
        // retain matching datatype only. Needed?
        Iterator<FieldDescriptor> it = fds.iterator();
        
@@ -161,52 +195,42 @@ public class Context {
            else
  
             {
-                if (allValid && fieldhelper.getTheClass().equals("DataField"))
+                if (fieldhelper.getTheClass().equals("DataField"))
+                {
+                if (allValid )
                 // remove DataFields with Intervals or Values
                 {
                     if (fieldhelper.getInterVals().size()>0 || fieldhelper.getValues().size()>0) {
                     it.remove();
                         }     
                  }
+                if (valuesCompulsory )
+                // remove DataFields without Values
+                {
+                    if (fieldhelper.getValues().size()==0) {
+                    it.remove();
+                        }     
+                 }
+                }
             }
        }
                            
        Integer numFields = fds.size();
-       Integer selected = this.generator.intValue(0, numFields-1);            
+       if (numFields==0)
+       {
+           return null;
+       }
+       // System.out.println("  selected: " + String.valueOf(selected));
+       selected = this.generator.intValue(0, numFields-1);            
                      
        return fds.get(selected);
-      
-   }      
+ }
+        
+  
    
    /**
      * Returns whether the DataField is involved in any DerivedField in TransformationDictionary.
-     */
-   public Boolean inTransformationDictionary(String dataFieldName) throws Exception
-   {
-      PMML pmml = (PMML)rootScope.PMMLScope;    
-       TransformationDictionary td = pmml.getTransformationDictionary();
-       
-       for (DerivedField derF : td.getDerivedField())
-       {
-           if (derF.getFieldRef() !=null)
-           {
-               if (dataFieldName.equals(derF.getFieldRef().getField()))
-               { 
-                   return true;
-               }
-           }
-             if (derF.getDiscretize()!=null)
-           {
-               if (dataFieldName.equals(derF.getDiscretize().getField()))
-               { 
-                   return true;
-               }
-           }
-       }
-       
-       return false;
-   }
-   
+     */   
    private List<BuiltinFunction> populateBuiltInFunctions()
    {
        List<BuiltinFunction> functions = new ArrayList<BuiltinFunction>();       
@@ -300,6 +324,21 @@ public class Context {
            throw new Exception("field not found");
            
        }
+       
+       public void affectField(String name)
+       {
+           if (!this.tdAffectedFields.containsKey(name))
+           {
+               this.tdAffectedFields.put(name, Boolean.TRUE);
+           }
+       }
+       
+       public Boolean isTDAffected(String name)
+       {
+           return this.tdAffectedFields.containsKey(name);
+       }
+       
+      
    }
     
 

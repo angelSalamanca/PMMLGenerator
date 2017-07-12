@@ -21,6 +21,7 @@ public class FieldHelper {
     private DataField dField;
     private MiningField mField;
     private DerivedField derField;
+    private ParameterField pField;
     private String theClass;
     private NameGenerator generator;
         
@@ -37,72 +38,94 @@ public class FieldHelper {
         PMML pmml = scope.getRootContainer();
         
         String containerClass = container.getClass().getSimpleName();
-        Object content;
+        Object content = null;
+        LocalTransformations lt = null;
+        Boolean addTransfDict = false;
+        Boolean isModel = false;
         
         containerswitch:
         switch(containerClass)
         {
             case "PMML":
-                
+                  addTransfDict = true;
                  // DataField ?
                 List<DataField> dataFields = pmml.getDataDictionary().getDataField();
                 for (DataField df : dataFields) {
-                if (df.getName() == fieldName)
+                if (df.getName().equals(fieldName))
                 {
                     this.theField = df;
-                    break containerswitch;
-                }
-            }            
-            // DerivedField ?
-            List<DerivedField> derivedFields = pmml.getTransformationDictionary().getDerivedField();
-            for (DerivedField derf : derivedFields) {
-                if (derf.getName() == fieldName)
-                {
-                    this.theField = derf;
-                    break  containerswitch;
+                    break;
                 }
             }
+           
             break;   
-                
+              
           case "GeneralRegressionModel":
-                    GeneralRegressionModel grm = (GeneralRegressionModel)container;
-                   content = grm.getFromContent("MiningSchema");
-                    for (MiningField mf : ((MiningSchema)content).getMiningField()) {
-                    if (mf.getName() == fieldName)
+               GeneralRegressionModel grm = (GeneralRegressionModel)container;
+               content = grm.getFromContent("MiningSchema");
+               lt = (LocalTransformations)grm.getFromContent("LocalTransformations");
+               isModel = true;
+               addTransfDict = true;
+               break;
+          case "TreeModel":
+               TreeModel treeModel = (TreeModel)container;
+               content = treeModel.getFromContent("MiningSchema");
+               lt = (LocalTransformations)treeModel.getFromContent("LocalTransformations");
+               isModel = true;
+               addTransfDict = true;
+               break; 
+          case "DefineFunction":
+                DefineFunction df  = (DefineFunction)container;
+                for (ParameterField pf : df.getParameterField()) {
+                    if (pf.getName() == fieldName)
                     {
-                        this.theField = mf;
+                        this.theField = pf;
                         break  containerswitch;
                     }
                 }
+                throw new Exception ("Field not found" + containerClass);
           
-               // DerivedField in LT?                
-                content  = grm.getFromContent("LocalTransformations");
-                for (DerivedField derf : ((LocalTransformations)content).getDerivedField()) {
-                if (derf.getName() == fieldName)
-                {
-                    this.theField = derf;
-                    break  containerswitch;
-                }
-            }
-             
-          // DerivedField in TD?
-            
-            for (DerivedField derf : pmml.getTransformationDictionary().getDerivedField()) {
-                if (derf.getName() == fieldName)
-                {
-                    this.theField = derf;
-                    break  containerswitch;
-                }
-            }
+              
             default:    //MODEL            
                 throw new Exception ("Unexpected model " + containerClass);
             }            
+        
+         if (isModel)
+        {
+            // MiningFields
+            for (MiningField mf : ((MiningSchema)content).getMiningField()) {
+            if (mf.getName() == fieldName)
+            {
+                this.theField = mf;                       
+             }
+         }
+            // DerivedField in LT?      
+            if (lt != null){
+                for (DerivedField derf : lt.getDerivedField()) {
+                if (derf.getName() == fieldName)
+                {
+                    this.theField = derf;
+                }
+                }
+            }             
+        }
+                               
+            if (addTransfDict && this.theField==null)
+            {       
+            pmml = scope.getRootContainer();
+             for (DerivedField derf : pmml.getTransformationDictionary().getDerivedField()) {
+                if (derf.getName().equals(fieldName))
+                {
+                    this.theField = derf;                
+                }
+            }
+        }
         
         if (this.theField == null)
         {
                 throw new Exception("field not found in context");
         }
-        
+       
         this.castField();
         this.generator = new NameGenerator();
     }
@@ -126,6 +149,9 @@ public class FieldHelper {
             case "DerivedField":
                 derField = (DerivedField)theField;      
                 break;
+            case "ParameterField":
+                pField = (ParameterField)theField;
+                break;
             default:
                 throw new Exception("Unexpected class");
         }
@@ -142,6 +168,8 @@ public class FieldHelper {
                 return mField.getOptype();
             case "DerivedField":
                 return derField.getOptype();
+            case "ParameterField":
+                return pField.getOptype();
             default:
                 throw new Exception("Unexpected class");
         }
@@ -157,6 +185,8 @@ public class FieldHelper {
                 return mField.readDataType();
             case "DerivedField":
                 return derField.getDataType();
+            case "ParameterField":
+                return pField.getDataType();
             default:
                 throw new Exception("Unexpected class");
         }

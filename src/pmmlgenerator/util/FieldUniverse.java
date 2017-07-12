@@ -14,7 +14,7 @@ import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;
  */
 public class FieldUniverse {
 
-    public enum FieldType {DataField, DerivedField, MiningField, OutputField, AnyField}
+    public enum FieldType {DataField, DerivedField, MiningField, OutputField, AnyField, ParameterField}
     
     private Map<String, FieldDescriptor> fields;
     
@@ -25,6 +25,12 @@ public class FieldUniverse {
         this.context = thiscontext;
         fields = new HashMap<String, FieldDescriptor>();
         
+        if (this.context.getCurrentScope().isDefineFunction())
+        {
+            addParameterFields();
+        }
+        else
+        {        
         addDataAndTransformationDictionary();
         
         Scope slidingScope = this.context.getCurrentScope();
@@ -32,11 +38,17 @@ public class FieldUniverse {
         {
             addLocalFields(slidingScope);            
             slidingScope = slidingScope.getParent();
-        }        
+        } 
+        }
+    }
+    
+    public Integer numFields()
+    {
+        return this.fields.size();
     }
     
     private void addDataAndTransformationDictionary()
-    {
+    {        
         PMML pmml = (PMML)this.context.getRootScope().getPMMLScope();
         String ns = this.context.getRootScope().getName() + ".";
         
@@ -112,6 +124,15 @@ public class FieldUniverse {
             }            
             return fds;
        }
+     
+     private void addParameterFields()
+     {
+         DefineFunction df = (DefineFunction)this.context.getCurrentScope().PMMLScope;
+         for (ParameterField pf : df.getParameterField())
+         {
+                fields.put(pf.getName(), new FieldDescriptor(pf.getName(), FieldType.ParameterField, 0, this.context.getCurrentScope()));       
+         }
+     }
     
     
 }

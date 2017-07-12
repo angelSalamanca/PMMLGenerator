@@ -22,7 +22,8 @@ public class DerivedFieldBuilder {
      private DerivedField field;
      private NameGenerator generator;
      private Context context;
-
+     private  Integer randomSwitch;
+     
     public DerivedFieldBuilder(DerivedField thisField, NameGenerator thisGenerator, Context thisContext)
     {
         this.field = thisField;
@@ -33,11 +34,13 @@ public class DerivedFieldBuilder {
     public DerivedField build() throws Exception
     {
         DATATYPE datatype = this.field.getDataType();
-
+        Integer numFields = this.context.getFieldUniverse().numFields();
+       
         switch(datatype)
         {
             case STRING:
-                 switch(generator.intValue(1, 3))
+                randomSwitch = generator.intValue(1, 3);
+                 switch(randomSwitch)
                  {
                     case 1:
                         return constantField(datatype);
@@ -49,7 +52,8 @@ public class DerivedFieldBuilder {
             case FLOAT:
             case DOUBLE:
             case INTEGER:
-                  switch(generator.intValue(1, 9))
+                randomSwitch = generator.intValue(1, 9);
+                  switch(randomSwitch)
         {
             case 1:
                 return constantField(datatype);
@@ -65,7 +69,7 @@ public class DerivedFieldBuilder {
                     return constantField(datatype); // INTEGER not allowed for this
                 }
             case 4:
-            if (this.field.getDataType()==DATATYPE.DOUBLE || this.field.getDataType() == DATATYPE.FLOAT)
+            if ((this.field.getDataType()==DATATYPE.DOUBLE || this.field.getDataType() == DATATYPE.FLOAT) && numFields>30)
                 {
                     return normDiscreteField();
                 }
@@ -97,6 +101,8 @@ public class DerivedFieldBuilder {
              default:
                 throw new Exception("Unexpected case");
            }
+         
+        
 
     }
 
@@ -116,8 +122,9 @@ public class DerivedFieldBuilder {
         FieldRef fieldref = new FieldRef();
         this.field.setFieldRef(fieldref);
 
-        FieldDescriptor fd = this.context.randomField(datatype, true, false);
+        FieldDescriptor fd = this.context.randomField(datatype, true, false,false);
         fieldref.setField(fd.fieldName);
+        this.context.affectField(fd.fieldName);
 
         return this.field;
     }
@@ -127,8 +134,9 @@ public class DerivedFieldBuilder {
         NormContinuous normc = new NormContinuous();
         this.field.setNormContinuous(normc);
 
-        FieldDescriptor fd = this.context.randomField(this.field.getDataType(), true, false);
+        FieldDescriptor fd = this.context.randomField(this.field.getDataType(), true, false, false);
         normc.setField(fd.fieldName);
+        this.context.affectField(fd.fieldName);
 
         // get an ordered list of doubles, as in intervals.
          ArrayList<Double> dValues = this.generator.doubleValues(this.generator.intValue(2, 7));
@@ -152,28 +160,39 @@ public class DerivedFieldBuilder {
 
         // pick a String variable to convert to dummy 1/0 var. Could be any categorical but...
         // we also retain datafields only to get easy access to values
-        FieldDescriptor fd = this.context.randomField(DATATYPE.STRING, false, false);
+        FieldDescriptor fd = this.context.randomField(DATATYPE.STRING, false, false, true);
         String fieldName = fd.fieldName;
-   
+        this.context.affectField(fd.fieldName);
+        
         FieldHelper fieldhelper = new FieldHelper(fieldName, fd.scope);
 
         normd.setField(fieldName);
         normd.setMethod("indicator");
         Integer randomcat = this.generator.intValue(0, fieldhelper.getValues().size()-1);
-        String value = fieldhelper.getValues().get(randomcat).getValue();
-        normd.setValue(value);
-
-
+        
+        List<Value> values = fieldhelper.getValues();
+        String value;
+        if (values.size()>0)
+        {
+             value = fieldhelper.getValues().get(randomcat).getValue();
+        }
+        else
+        {
+            value = this.generator.stringValue(3);
+        }
+        normd.setValue(value);       
+        
         return this.field;
     }
 
      private DerivedField discretizeField() throws Exception
      {
         Discretize discretize = new Discretize();
-        FieldDescriptor fd = this.context.randomField(DATATYPE.DOUBLE, false, true); // TODO Other CONTINUOUS
+        FieldDescriptor fd = this.context.randomField(DATATYPE.DOUBLE, false, true,false); // TODO Other CONTINUOUS
         String fieldName = fd.fieldName;
  
-            discretize.setField(fieldName);
+        discretize.setField(fieldName);
+        this.context.affectField(fd.fieldName);
         discretize.setDefaultValue(this.generator.stringValue(2));
         discretize.setMapMissingTo(this.generator.stringValue(2));
         this.field.setDiscretize(discretize);
@@ -247,9 +266,11 @@ public class DerivedFieldBuilder {
         String outputColumnName = "outputcol_" + generator.stringValue(3);
         mapvalues.setOutputColumn(outputColumnName);
         
-        FieldDescriptor fd = this.context.randomField(DATATYPE.STRING, true, false);
+        FieldDescriptor fd = this.context.randomField(DATATYPE.STRING, true, false, false);
         FieldColumnPair fcpair = new FieldColumnPair();
         fcpair.setField(fd.fieldName);
+        this.context.affectField(fd.fieldName);
+
         fcpair.setColumn(inputColumnName);
         mapvalues.getFieldColumnPair().add(fcpair);
         

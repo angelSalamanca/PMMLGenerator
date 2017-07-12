@@ -41,7 +41,7 @@ public class MiningSchemaBuilder {
            {
                 // random pick                
                 double d = this.generator.doubleValue();
-                if (d<0.75 || this.context.inTransformationDictionary(fd.fieldName))
+                if (d<0.75 || this.context.isTDAffected(fd.fieldName))
                 {
                     MiningField mField = new MiningField();
                     String fieldName = fd.fieldName;

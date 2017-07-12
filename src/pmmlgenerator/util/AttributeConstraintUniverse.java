@@ -21,13 +21,13 @@ public class AttributeConstraintUniverse {
     
     public void addConstraint(AttributeConstraint ac)
     {
-        constraints.put(ac.getTargetAttribute(), ac);
+        constraints.put(ac.getNodeName() + "." + ac.getTargetAttribute(), ac);
     }
     
     public String[] getAvailableValues(String node, String targetAtt, String constAtt, String constValue, String[] fullList)
     {
      ArrayList<String> available = new ArrayList<String>(Arrays.asList(fullList));
-     AttributeConstraint ac = constraints.get(targetAtt);
+     AttributeConstraint ac = constraints.get(node + "." + targetAtt);
      if (ac!=null) // constraint found
      {
          if (node.equals(ac.getNodeName()) & constAtt.equals(ac.getConstrainter()))
