@@ -47,6 +47,11 @@ public class FieldUniverse {
         return this.fields.size();
     }
     
+    public FieldDescriptor get(String key)
+    {
+        return this.fields.get(key);
+    }
+    
     private void addDataAndTransformationDictionary()
     {        
         PMML pmml = (PMML)this.context.getRootScope().getPMMLScope();
@@ -56,7 +61,7 @@ public class FieldUniverse {
                 {
                         for (DataField df : pmml.getDataDictionary().getDataField())
                         {
-                            fields.put(ns+df.getName(), new FieldDescriptor(df.getName(), FieldType.DataField, 0, this.context.getRootScope()));       
+                            fields.put(ns+df.getName(), new FieldDescriptor(df.getName(), FieldType.DataField, 0, this.context.getRootScope(), df.getOptype(), df.getDataType()));       
                         }     
                 }        
         
@@ -64,7 +69,7 @@ public class FieldUniverse {
            {
             for (DerivedField derf : pmml.getTransformationDictionary().getDerivedField())
             {
-                fields.put(ns+derf.getName(), new FieldDescriptor(derf.getName(), FieldType.DerivedField, 0, this.context.getRootScope()));       
+                fields.put(ns+derf.getName(), new FieldDescriptor(derf.getName(), FieldType.DerivedField, 0, this.context.getRootScope(), derf.getOptype(), derf.getDataType()));       
             }     
         }
     }
@@ -79,14 +84,17 @@ public class FieldUniverse {
         {
             for (MiningField mf : localScope.readMiningFields())
             {
-                fields.put(ns+mf.getName(), new FieldDescriptor(mf.getName(), FieldType.MiningField, level, localScope));       
+                DATATYPE datatype = this.context.getDataTypeOfMF(mf);
+               OPTYPE optype = this.context.getOpTypeOfMF(mf);
+                
+                fields.put(ns+mf.getName(), new FieldDescriptor(mf.getName(), FieldType.MiningField, level, localScope, optype, datatype));       
             }     
         }
            if (localScope.getLocalTransformations()!=null)
            {
         for (DerivedField derf : localScope.readLocalDerivedFields())
             {
-                fields.put(ns+derf.getName(), new FieldDescriptor(derf.getName(), FieldType.DerivedField, level, localScope));       
+                fields.put(ns+derf.getName(), new FieldDescriptor(derf.getName(), FieldType.DerivedField, level, localScope, derf.getOptype(), derf.getDataType()));       
             }
            }
     }
@@ -130,7 +138,7 @@ public class FieldUniverse {
          DefineFunction df = (DefineFunction)this.context.getCurrentScope().PMMLScope;
          for (ParameterField pf : df.getParameterField())
          {
-                fields.put(pf.getName(), new FieldDescriptor(pf.getName(), FieldType.ParameterField, 0, this.context.getCurrentScope()));       
+                fields.put(pf.getName(), new FieldDescriptor(pf.getName(), FieldType.ParameterField, 0, this.context.getCurrentScope(), null, null));       
          }
      }
     

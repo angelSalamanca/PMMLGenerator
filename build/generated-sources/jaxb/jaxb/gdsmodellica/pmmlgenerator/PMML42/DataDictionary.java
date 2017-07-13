@@ -2,7 +2,7 @@
 // Este archivo ha sido generado por la arquitectura JavaTM para la implantación de la referencia de enlace (JAXB) XML v2.2.5-2 
 // Visite <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Todas las modificaciones realizadas en este archivo se perderán si se vuelve a compilar el esquema de origen. 
-// Generado el: PM.07.06 a las 10:07:19 PM CEST 
+// Generado el: PM.07.12 a las 12:57:26 PM CEST 
 //
 
 
@@ -118,10 +118,6 @@ public class DataDictionary {
         }
         return this.dataField;
     }
-    
-    public void  setDataField(List<DataField> fields ) {
-        dataField = fields;        
-    }
 
     /**
      * Gets the value of the taxonomy property.
@@ -145,7 +141,6 @@ public class DataDictionary {
      * 
      * 
      */
-    
     public List<Taxonomy> getTaxonomy() {
         if (taxonomy == null) {
             taxonomy = new ArrayList<Taxonomy>();

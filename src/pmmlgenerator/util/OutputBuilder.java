@@ -34,7 +34,7 @@ public class OutputBuilder {
             of.setName(this.generator.getOutputFieldName());
             of.setFeature(RESULTFEATURE.PREDICTED_VALUE);
             of.setOptype(targetField.getOptype());
-            of.setDataType(targetField.readDataType());
+            of.setDataType(modelContext.context.getDataTypeOfMF(targetField));
             output.getOutputField().add(of);
         }
         

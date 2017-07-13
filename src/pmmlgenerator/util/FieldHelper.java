@@ -24,18 +24,24 @@ public class FieldHelper {
     private ParameterField pField;
     private String theClass;
     private NameGenerator generator;
-        
+    private ContentUtil cu;
+    private Context context;
+    
+    
     public FieldHelper(Object genericField) throws Exception
     {
         this.theField = genericField;        
         this.castField();
         this.generator = new NameGenerator();
+        this.cu = new ContentUtil();
     }    
     
     public FieldHelper(String fieldName, Scope scope) throws Exception
     {
         Object container = scope.PMMLScope;
         PMML pmml = scope.getRootContainer();
+        this.context = scope.context;
+        this.cu = scope.cu;
         
         String containerClass = container.getClass().getSimpleName();
         Object content = null;
@@ -62,15 +68,15 @@ public class FieldHelper {
               
           case "GeneralRegressionModel":
                GeneralRegressionModel grm = (GeneralRegressionModel)container;
-               content = grm.getFromContent("MiningSchema");
-               lt = (LocalTransformations)grm.getFromContent("LocalTransformations");
+               content = cu.getFromContent(grm.getContent(), "MiningSchema");
+               lt = (LocalTransformations)cu.getFromContent(grm.getContent(),"LocalTransformations");
                isModel = true;
                addTransfDict = true;
                break;
           case "TreeModel":
                TreeModel treeModel = (TreeModel)container;
-               content = treeModel.getFromContent("MiningSchema");
-               lt = (LocalTransformations)treeModel.getFromContent("LocalTransformations");
+               content = cu.getFromContent(treeModel.getContent(), "MiningSchema");
+              lt = (LocalTransformations)cu.getFromContent(treeModel.getContent(),"LocalTransformations");
                isModel = true;
                addTransfDict = true;
                break; 
@@ -182,7 +188,7 @@ public class FieldHelper {
             case "DataField":
                 return dField.getDataType();
             case "MiningField":
-                return mField.readDataType();
+                return this.context.getDataTypeOfMF(mField);
             case "DerivedField":
                 return derField.getDataType();
             case "ParameterField":

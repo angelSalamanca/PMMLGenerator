@@ -75,7 +75,7 @@ public class DDDriver {
             categoricalStringValues = new IntDuple(2,10);
             if (nameGenerator.doubleValue()<0.75)
             {                
-                df.setValue(createValues(categoricalStringValues, DATATYPE.STRING));
+                createValues(categoricalStringValues, DATATYPE.STRING, df);
             }
             
             myDfs.add(df);
@@ -94,7 +94,7 @@ public class DDDriver {
             df.setDataType(DATATYPE.INTEGER);
             df.setName(nameGenerator.getDataFieldName("Integer"));
             df.setDisplayName("Display "  + df.getName() );
-            df.setValue(createValues(categoricalIntegerValues, DATATYPE.INTEGER));
+           createValues(categoricalIntegerValues, DATATYPE.INTEGER, df);
             
             myDfs.add(df);
         }
@@ -112,7 +112,7 @@ public class DDDriver {
             df.setDataType(DATATYPE.STRING);
             df.setName(nameGenerator.getDataFieldName("String"));
             df.setDisplayName("Display "  + df.getName() );
-            df.setValue(createValues(ordinalStringValues, DATATYPE.STRING));
+            createValues(ordinalStringValues, DATATYPE.STRING, df);
                
             myDfs.add(df);
         }
@@ -130,7 +130,7 @@ public class DDDriver {
             df.setDataType(DATATYPE.INTEGER);
             df.setName(nameGenerator.getDataFieldName("Integer"));
             df.setDisplayName("Display "  + df.getName() );
-            df.setValue(createValues(ordinalIntegerValues, DATATYPE.INTEGER));
+           createValues(ordinalIntegerValues, DATATYPE.INTEGER, df);
             
             
             myDfs.add(df);
@@ -149,8 +149,8 @@ public class DDDriver {
             df.setDataType(DATATYPE.INTEGER);
             df.setName(nameGenerator.getDataFieldName("Integer"));
             df.setDisplayName("Display "  + df.getName() );
-            df.setInterval(createIntervals(continuousIntegerIntervals, DATATYPE.INTEGER));
-            df.setValue(createValues(continuousIntegerValues, DATATYPE.INTEGER));
+           createIntervals(continuousIntegerIntervals, DATATYPE.INTEGER, df);
+           createValues(continuousIntegerValues, DATATYPE.INTEGER, df);
             
             
             myDfs.add(df);
@@ -169,8 +169,8 @@ public class DDDriver {
             df.setDataType(DATATYPE.FLOAT);
             df.setName(nameGenerator.getDataFieldName("Float"));
             df.setDisplayName("Display "  + df.getName() );
-               df.setInterval(createIntervals(continuousFloatIntervals, DATATYPE.FLOAT));
-            df.setValue(createValues(continuousFloatValues, DATATYPE.FLOAT));
+           createIntervals(continuousFloatIntervals, DATATYPE.FLOAT, df);
+          createValues(continuousFloatValues, DATATYPE.FLOAT, df);
                      
             myDfs.add(df);
         }
@@ -188,21 +188,21 @@ public class DDDriver {
             df.setDataType(DATATYPE.DOUBLE);
             df.setName(nameGenerator.getDataFieldName("Double"));
             df.setDisplayName("Display "  + df.getName() );            
-            df.setInterval(createIntervals(continuousDoubleIntervals, DATATYPE.DOUBLE));
-            df.setValue(createValues(continuousDoubleValues, DATATYPE.DOUBLE));
+            createIntervals(continuousDoubleIntervals, DATATYPE.DOUBLE, df);
+            createValues(continuousDoubleValues, DATATYPE.DOUBLE, df);
             
             myDfs.add(df);
         }
         return myDfs;
     }
 
-          private ArrayList<Value> createValues(IntDuple valuesDuple, DATATYPE myType)
+          private void createValues(IntDuple valuesDuple, DATATYPE myType, DataField datafield)
             throws Exception
     {
         ArrayList<Value> myList = new ArrayList<Value>();
                   
         if (valuesDuple.actualNumber == 0)
-         { return myList; }
+         { return ; }
               
       
         switch(myType)
@@ -251,17 +251,21 @@ public class DDDriver {
                 throw new Exception("Not implemented");
        
         }
-        return myList;
+        for (Value value : myList)
+        {
+            datafield.getValue().add(value);
+        }
+        
     }
           
-         private ArrayList<Interval> createIntervals(IntDuple intervalsDuple, DATATYPE myType)
+         private void createIntervals(IntDuple intervalsDuple, DATATYPE myType, DataField datafield)
                   throws Exception
     {
         ArrayList<Interval> myList = new ArrayList<Interval>();
         intervalsDuple.refresh(); // to have more variety across Data Fields
         
         if (intervalsDuple.actualNumber == 0)
-         { return myList; }
+         { return ;}
         
         switch(myType)
         {
@@ -316,7 +320,11 @@ public class DDDriver {
                 break;
         }
         
-        return myList;
+        for (Interval interval : myList)
+        {
+            datafield.getInterval().add(interval);
+        }
+        return;
         }
         
 }

@@ -7,11 +7,7 @@ package pmmlgenerator;
 
 import java.util.*;
 import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;
-import pmmlgenerator.util.Context;
-import pmmlgenerator.util.Scope;
-import pmmlgenerator.util.FieldHelper;
-import pmmlgenerator.util.General;
-import pmmlgenerator.util.NameGenerator;
+import pmmlgenerator.util.*;
 
 /**
  *
@@ -43,8 +39,10 @@ public class TransformationDictionaryBuilder {
     {
         TransformationDictionary td = new TransformationDictionary();
         
+        addSafeDefinedFunctions(td.getDefineFunction());
+        addDefinedFunctions(td.getDefineFunction());      
         addDerivedFields(td.getDerivedField());        
-        addDefinedFunctions(td.getDefineFunction());        
+        
         return td;
     }
     
@@ -172,4 +170,61 @@ public class TransformationDictionaryBuilder {
         }
         
     }
+    
+      private void addSafeDefinedFunctions(List<DefineFunction> functions) throws Exception
+      {
+          // Safe ln
+          DefineFunction df = new DefineFunction();
+          df.setName("safeln");
+          df.setDataType(DATATYPE.DOUBLE);
+          df.setOptype(OPTYPE.CONTINUOUS);
+          List<ParameterField> pfl = df.getParameterField();
+          ParameterField pf = new ParameterField();
+          pf.setName("safe1");
+          pf.setDataType(DATATYPE.DOUBLE);
+          pf.setOptype(OPTYPE.CONTINUOUS);
+          pfl.add(pf);
+          Apply apply = new Apply();
+          apply.setFunction("ln");
+          Apply apply2 = new Apply();
+          apply2.setFunction("abs");          
+          FieldRef fr = new FieldRef();
+          fr.setField("safe1");
+          apply2.getEXPRESSION().add(fr);
+          apply.getEXPRESSION().add(apply2);
+          df.setApply(apply);
+          functions.add(df);
+          
+          // Safe log10
+          df = new DefineFunction();
+          df.setName("safelog10");
+          df.setDataType(DATATYPE.DOUBLE);
+          df.setOptype(OPTYPE.CONTINUOUS);
+          pfl = df.getParameterField();
+          pf = new ParameterField();
+          pf.setName("safe1");
+          pf.setDataType(DATATYPE.DOUBLE);
+          pf.setOptype(OPTYPE.CONTINUOUS);
+          pfl.add(pf);
+          apply = new Apply();
+          apply.setFunction("log10");
+          apply2 = new Apply();
+          apply2.setFunction("abs");          
+          fr = new FieldRef();
+          fr.setField("safe1");
+          apply2.getEXPRESSION().add(fr);
+          apply.getEXPRESSION().add(apply2);
+          df.setApply(apply);
+          functions.add(df);
+          
+          BuiltinFunction sf = new BuiltinFunction();
+          sf.setName(df.getName());
+          String[] args = {"c"}; 
+          sf.setArgumentTypes(args);
+          sf.setIsNumeric(true);         
+          
+          this.context.addSafeFunction(sf);
+          
+          this.context.mergeFunctionLists();
+      }
 }

@@ -2,7 +2,7 @@
 // Este archivo ha sido generado por la arquitectura JavaTM para la implantación de la referencia de enlace (JAXB) XML v2.2.5-2 
 // Visite <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Todas las modificaciones realizadas en este archivo se perderán si se vuelve a compilar el esquema de origen. 
-// Generado el: PM.07.06 a las 10:07:19 PM CEST 
+// Generado el: PM.07.12 a las 12:57:26 PM CEST 
 //
 
 
@@ -66,19 +66,19 @@ import javax.xml.bind.annotation.XmlType;
 public class TextModel {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "ModelExplanation", namespace = "http://www.dmg.org/PMML-4_2", type = ModelExplanation.class, required = false),
-        @XmlElementRef(name = "Targets", namespace = "http://www.dmg.org/PMML-4_2", type = Targets.class, required = false),
         @XmlElementRef(name = "MiningSchema", namespace = "http://www.dmg.org/PMML-4_2", type = MiningSchema.class, required = false),
-        @XmlElementRef(name = "TextModelNormalization", namespace = "http://www.dmg.org/PMML-4_2", type = TextModelNormalization.class, required = false),
-        @XmlElementRef(name = "ModelStats", namespace = "http://www.dmg.org/PMML-4_2", type = ModelStats.class, required = false),
-        @XmlElementRef(name = "DocumentTermMatrix", namespace = "http://www.dmg.org/PMML-4_2", type = DocumentTermMatrix.class, required = false),
-        @XmlElementRef(name = "TextDictionary", namespace = "http://www.dmg.org/PMML-4_2", type = TextDictionary.class, required = false),
         @XmlElementRef(name = "TextModelSimiliarity", namespace = "http://www.dmg.org/PMML-4_2", type = TextModelSimiliarity.class, required = false),
+        @XmlElementRef(name = "TextDictionary", namespace = "http://www.dmg.org/PMML-4_2", type = TextDictionary.class, required = false),
         @XmlElementRef(name = "Output", namespace = "http://www.dmg.org/PMML-4_2", type = Output.class, required = false),
-        @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_2", type = Extension.class, required = false),
-        @XmlElementRef(name = "ModelVerification", namespace = "http://www.dmg.org/PMML-4_2", type = ModelVerification.class, required = false),
+        @XmlElementRef(name = "DocumentTermMatrix", namespace = "http://www.dmg.org/PMML-4_2", type = DocumentTermMatrix.class, required = false),
         @XmlElementRef(name = "LocalTransformations", namespace = "http://www.dmg.org/PMML-4_2", type = LocalTransformations.class, required = false),
-        @XmlElementRef(name = "TextCorpus", namespace = "http://www.dmg.org/PMML-4_2", type = TextCorpus.class, required = false)
+        @XmlElementRef(name = "TextCorpus", namespace = "http://www.dmg.org/PMML-4_2", type = TextCorpus.class, required = false),
+        @XmlElementRef(name = "ModelExplanation", namespace = "http://www.dmg.org/PMML-4_2", type = ModelExplanation.class, required = false),
+        @XmlElementRef(name = "ModelStats", namespace = "http://www.dmg.org/PMML-4_2", type = ModelStats.class, required = false),
+        @XmlElementRef(name = "TextModelNormalization", namespace = "http://www.dmg.org/PMML-4_2", type = TextModelNormalization.class, required = false),
+        @XmlElementRef(name = "ModelVerification", namespace = "http://www.dmg.org/PMML-4_2", type = ModelVerification.class, required = false),
+        @XmlElementRef(name = "Targets", namespace = "http://www.dmg.org/PMML-4_2", type = Targets.class, required = false),
+        @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_2", type = Extension.class, required = false)
     })
     protected List<Object> content;
     @XmlAttribute(name = "modelName")
@@ -122,19 +122,19 @@ public class TextModel {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link ModelExplanation }
-     * {@link Targets }
      * {@link MiningSchema }
-     * {@link TextModelNormalization }
-     * {@link ModelStats }
-     * {@link DocumentTermMatrix }
-     * {@link TextDictionary }
      * {@link TextModelSimiliarity }
+     * {@link TextDictionary }
      * {@link Output }
-     * {@link Extension }
-     * {@link ModelVerification }
+     * {@link DocumentTermMatrix }
      * {@link LocalTransformations }
      * {@link TextCorpus }
+     * {@link ModelExplanation }
+     * {@link ModelStats }
+     * {@link TextModelNormalization }
+     * {@link ModelVerification }
+     * {@link Targets }
+     * {@link Extension }
      * 
      * 
      */

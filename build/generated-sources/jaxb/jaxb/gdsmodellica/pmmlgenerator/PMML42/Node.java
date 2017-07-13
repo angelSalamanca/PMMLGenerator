@@ -2,7 +2,7 @@
 // Este archivo ha sido generado por la arquitectura JavaTM para la implantación de la referencia de enlace (JAXB) XML v2.2.5-2 
 // Visite <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Todas las modificaciones realizadas en este archivo se perderán si se vuelve a compilar el esquema de origen. 
-// Generado el: PM.07.06 a las 10:07:19 PM CEST 
+// Generado el: PM.07.12 a las 12:57:26 PM CEST 
 //
 
 
@@ -59,17 +59,17 @@ import javax.xml.bind.annotation.XmlType;
 public class Node {
 
     @XmlElementRefs({
+        @XmlElementRef(name = "SimplePredicate", namespace = "http://www.dmg.org/PMML-4_2", type = SimplePredicate.class, required = false),
         @XmlElementRef(name = "True", namespace = "http://www.dmg.org/PMML-4_2", type = True.class, required = false),
-        @XmlElementRef(name = "Node", namespace = "http://www.dmg.org/PMML-4_2", type = Node.class, required = false),
+        @XmlElementRef(name = "DecisionTree", namespace = "http://www.dmg.org/PMML-4_2", type = DecisionTree.class, required = false),
+        @XmlElementRef(name = "Partition", namespace = "http://www.dmg.org/PMML-4_2", type = Partition.class, required = false),
         @XmlElementRef(name = "ScoreDistribution", namespace = "http://www.dmg.org/PMML-4_2", type = ScoreDistribution.class, required = false),
+        @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_2", type = Extension.class, required = false),
         @XmlElementRef(name = "CompoundPredicate", namespace = "http://www.dmg.org/PMML-4_2", type = CompoundPredicate.class, required = false),
         @XmlElementRef(name = "False", namespace = "http://www.dmg.org/PMML-4_2", type = False.class, required = false),
-        @XmlElementRef(name = "Regression", namespace = "http://www.dmg.org/PMML-4_2", type = Regression.class, required = false),
-        @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_2", type = Extension.class, required = false),
+        @XmlElementRef(name = "Node", namespace = "http://www.dmg.org/PMML-4_2", type = Node.class, required = false),
         @XmlElementRef(name = "SimpleSetPredicate", namespace = "http://www.dmg.org/PMML-4_2", type = SimpleSetPredicate.class, required = false),
-        @XmlElementRef(name = "Partition", namespace = "http://www.dmg.org/PMML-4_2", type = Partition.class, required = false),
-        @XmlElementRef(name = "SimplePredicate", namespace = "http://www.dmg.org/PMML-4_2", type = SimplePredicate.class, required = false),
-        @XmlElementRef(name = "DecisionTree", namespace = "http://www.dmg.org/PMML-4_2", type = DecisionTree.class, required = false)
+        @XmlElementRef(name = "Regression", namespace = "http://www.dmg.org/PMML-4_2", type = Regression.class, required = false)
     })
     protected List<Object> content;
     @XmlAttribute(name = "id")
@@ -109,17 +109,17 @@ public class Node {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
+     * {@link SimplePredicate }
      * {@link True }
-     * {@link Node }
+     * {@link DecisionTree }
+     * {@link Partition }
      * {@link ScoreDistribution }
+     * {@link Extension }
      * {@link CompoundPredicate }
      * {@link False }
-     * {@link Regression }
-     * {@link Extension }
+     * {@link Node }
      * {@link SimpleSetPredicate }
-     * {@link Partition }
-     * {@link SimplePredicate }
-     * {@link DecisionTree }
+     * {@link Regression }
      * 
      * 
      */

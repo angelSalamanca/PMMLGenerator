@@ -31,6 +31,7 @@ public class ModelBuilder {
     private GeneralRegressionModel grm;
     private Integer paramNum;
     private ModelContext modelContext;
+    private ContentUtil cu;
    
     
     public ModelBuilder(PMML aPMML, Context thisContext)
@@ -38,7 +39,7 @@ public class ModelBuilder {
         pmml = aPMML;
         nameGenerator = new NameGenerator();      
         this.context = thisContext;
-        
+        this.cu = new ContentUtil();
     }
     
     public void build() throws Exception
@@ -100,15 +101,17 @@ public class ModelBuilder {
                 // Mining Schema
                 
                 MiningSchema ms = buildMiningSchema(true, grm.getFunctionName());
-                grm.addToContent(ms);
+                cu.addToContent(grm.getContent(), ms);
                 this.context.createFieldUniverse(); // update
                 
                  OutputBuilder ob = new OutputBuilder();
-                 grm.addToContent(ob.build(this.modelContext));
-                                 
+                 Output o = ob.build(this.modelContext);
+                 cu.addToContent(grm.getContent(), o);
+                                                  
                 // Local Transformations
                TransformationDictionaryBuilder tdb = new TransformationDictionaryBuilder(this.context);
-               grm.addToContent(tdb.buildLocal());
+               LocalTransformations lt = tdb.buildLocal();
+               cu.addToContent(grm.getContent(), lt);
                this.context.createFieldUniverse(); // update
                                
                 FactorList fl = buildFactorList(ms);
@@ -118,13 +121,13 @@ public class ModelBuilder {
                 
                 // Parameters after PPMatrix
                 ParameterList pl = buildParameterList();
-                grm.addToContent(pl); // Order of addition is important!
-                grm.addToContent(fl);                                       
-                grm.addToContent(cl);            
-                grm.addToContent(ppm);
+                cu.addToContent(grm.getContent(), pl);  // Order of addition is important!
+                cu.addToContent(grm.getContent(), fl);
+                cu.addToContent(grm.getContent(), cl);
+                cu.addToContent(grm.getContent(), ppm);
                  
                 ParamMatrix pm = buildParamMatrix();
-                grm.addToContent(pm);
+                cu.addToContent(grm.getContent(), pm);
                   
                 // Get # of categories from target field
                   if (grm.getFunctionName() ==MININGFUNCTION.CLASSIFICATION ){
@@ -167,7 +170,7 @@ public class ModelBuilder {
                     String fieldName = fd.fieldName;
                     mField.setName(fieldName);
                     this.fieldHelper  = new FieldHelper(fieldName, fd.scope);  // value is containerj
-                    mField.saveDataType(this.fieldHelper.getDataType());
+                    this.context.setDataTypeOfMF(mField, this.fieldHelper.getDataType());
                     // UsageType
                     if (firstField)
                     {                        

@@ -19,11 +19,13 @@ public class Context {
    private Scope currentScope;
    private NameGenerator generator;
    private List<BuiltinFunction> builtInFunctions;
+   private List<BuiltinFunction> safeFunctions;
    private List<BuiltinFunction> stringBuiltInFunctions;
    private FieldUniverse fieldUniverse;
    private Map<String, Boolean> tdAffectedFields;
    private List<FieldDescriptor> fds;
    private Integer selected;
+   private ContentUtil cu;
    
    
    public Context(Scope scope) throws Exception
@@ -31,9 +33,11 @@ public class Context {
        this.rootScope = scope;      
        this.generator = new NameGenerator();
        this.builtInFunctions = populateBuiltInFunctions();
+       this.safeFunctions = new ArrayList<BuiltinFunction>();
        this.stringBuiltInFunctions = populateStringBuiltinFunctions();
        this.setCurrentScope(scope);
        this.tdAffectedFields = new HashMap<String, Boolean>();
+       this.cu = new ContentUtil();
    }
    
    public Map<String, Object> getFieldNamesForMiningSchema() throws Exception
@@ -119,6 +123,18 @@ public class Context {
        return fds;
             
    }   
+  
+  public List<FieldDescriptor> keepContinuousFDS(List<FieldDescriptor> fds)
+  {
+      List<FieldDescriptor> fdsc = new ArrayList<FieldDescriptor>();
+      
+      for (FieldDescriptor fd : fds)
+      {
+          if (fd.optype==OPTYPE.CONTINUOUS)
+          { fdsc.add(fd);}
+      }
+      return fdsc;
+          }
    
     public Scope getRootScope()
    {
@@ -151,6 +167,8 @@ public class Context {
    public void createFieldUniverse() throws Exception
    {
        this.fieldUniverse = new FieldUniverse(this);
+       // create MSMAp
+       
    }
    
    public FieldDescriptor randomField(DATATYPE datatype, Boolean forModel, Boolean allValid,Boolean valuesCompulsory) throws Exception
@@ -254,19 +272,17 @@ public class Context {
        f.setArgumentTypes(new String[]{"c","c"});
        functions.add(f);
        
-       // TODO Implement max min
-       
-       f = new BuiltinFunction();
-       f.setName("log10");
-       f.setArgumentTypes(new String[]{"c"});
-       functions.add(f);
-       
-       f = new BuiltinFunction();
-       f.setName("ln");
-       f.setArgumentTypes(new String[]{"c"});
-       functions.add(f);
-       
+       // TODO Implement max min sqrt
+              
        return functions;
+   }
+   
+   public void mergeFunctionLists()
+   {
+       for (BuiltinFunction bf: this.safeFunctions)
+       {
+           this.builtInFunctions.add(bf);
+       }
    }
    
     private List<BuiltinFunction> populateStringBuiltinFunctions()
@@ -291,6 +307,11 @@ public class Context {
        return functions;
    }
     
+    public void addSafeFunction(BuiltinFunction sf)
+    {
+        this.safeFunctions.add(sf);
+    }
+    
    public BuiltinFunction getRandomFunction(DATATYPE datatype) throws Exception
    {
        switch (datatype)
@@ -301,10 +322,10 @@ public class Context {
            case DOUBLE:
            case FLOAT:
            case INTEGER:
-               return this.builtInFunctions.get(generator.intValue(0, this.builtInFunctions.size()-1));
+               return this.builtInFunctions.get(generator.intValue(0, this.builtInFunctions.size()-1)); 
                
            default:
-               throw new Exception("Unexpected DATATYPE in getRandomFanction");
+               throw new Exception("Unexpected DATATYPE in getRandomFunction");
        }
            
        }
@@ -338,7 +359,82 @@ public class Context {
            return this.tdAffectedFields.containsKey(name);
        }
        
-      
-   }
-    
+      public DATATYPE getDataTypeOfMF(MiningField mf) throws Exception
+      {
+          Object field = getFieldFromMF(mf);
+          if (field.getClass().getSimpleName().equals("DataField"))
+          {
+              return ((DataField)field).getDataType();
+          }
+              return ((DerivedField)field).getDataType();
+          
+      }
 
+      public OPTYPE getOpTypeOfMF(MiningField mf) throws Exception
+      {
+          Object field = getFieldFromMF(mf);
+          if (field.getClass().getSimpleName().equals("DataField"))
+          {
+              return ((DataField)field).getOptype();
+          }
+              return ((DerivedField)field).getOptype();
+          
+      }
+      
+      public void setDataTypeOfMF(MiningField mf, DATATYPE datatype) throws Exception
+      {
+          Object field = getFieldFromMF(mf);
+          if (field.getClass().getSimpleName().equals("DataField"))
+          {
+              DataField df = (DataField)field;
+              df.setDataType(datatype);
+              return;
+          }
+              DerivedField derf = (DerivedField)field;
+              derf.setDataType(datatype);
+          
+      }
+      
+      public Object getFieldFromMF(MiningField mf) throws Exception
+      {
+          List<FieldDescriptor> fdl = this.getFieldDescriptorsForMiningSchema();
+          FieldDescriptor sourcefd = null;
+          for (FieldDescriptor fd : fdl)
+          {
+              if(fd.fieldName.equals(mf.getName()))
+                      {
+                          sourcefd = fd;
+                          break;
+                      }
+          }
+          
+          if (sourcefd.fieldType == FieldType.DataField)
+          {
+           List<DataField> dfl =   ((PMML)this.getRootScope().PMMLScope).getDataDictionary().getDataField();
+           for (DataField df : dfl)
+           {
+               if (df.getName().equals(sourcefd.fieldName))
+               {
+                   return df;
+               }
+           }
+          }
+          
+           if (sourcefd.fieldType == FieldType.DerivedField)
+          {
+           List<DerivedField> ltf =   this.currentScope.readLocalDerivedFields();
+           for (DerivedField df : ltf)
+           {
+               if (df.getName().equals(sourcefd.fieldName))
+               {
+                   return df;
+               }
+           }
+          }
+          
+          throw new Exception("mining field data type");
+          
+      }
+      
+
+}

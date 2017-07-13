@@ -47,7 +47,7 @@ public class MiningSchemaBuilder {
                     String fieldName = fd.fieldName;
                     mField.setName(fieldName);
                     this.fieldHelper  = new FieldHelper(fieldName, fd.scope);  // value is containerj
-                    mField.saveDataType(this.fieldHelper.getDataType());
+                    this.context.setDataTypeOfMF(mField, this.fieldHelper.getDataType());
                     // UsageType
                     if (firstField)
                     {                        

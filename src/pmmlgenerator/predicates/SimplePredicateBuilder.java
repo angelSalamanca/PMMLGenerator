@@ -23,6 +23,7 @@ public class SimplePredicateBuilder extends PredicateBuilder {
           SimplePredicate sp = new SimplePredicate();
           
           List<FieldDescriptor> fds = modelContext.context.getFieldDescriptorsForModel(); // all kind of fields: MS, TD and LT
+          modelContext.context.keepContinuousFDS(fds);
           FieldDescriptor fd = fds.get(modelContext.generator.intValue(0, fds.size()-1));
           FieldHelper fh = new FieldHelper(fd.fieldName, fd.scope);
           sp.setField(fd.fieldName);

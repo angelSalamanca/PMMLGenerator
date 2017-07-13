@@ -172,7 +172,10 @@ public class PMMLGenerator {
         DataDictionary dd = new DataDictionary();
         List<DataField> dataFields = dddriver.getDataFields();
         
-        dd.setDataField(dataFields);
+        for (DataField df : dataFields)
+        {
+            dd.getDataField().add(df);
+        }
         
         BigInteger numOfFields = BigInteger.valueOf(dataFields.size());
         dd.setNumberOfFields(numOfFields);

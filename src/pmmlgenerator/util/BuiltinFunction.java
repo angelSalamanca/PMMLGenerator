@@ -17,7 +17,7 @@ public class BuiltinFunction {
     private String[] argumentTypes;
     private Boolean isNumeric;
     
-            public BuiltinFunction()
+    public BuiltinFunction()
             {
                 this.isNumeric = true;
             }

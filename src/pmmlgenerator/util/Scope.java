@@ -106,16 +106,7 @@ public class Scope {
     
     public List<MiningField> readMiningFields() throws Exception
     {
-        switch (this.PMMLScope.getClass().getSimpleName())
-        {
-            case "GeneralRegressionModel":
-                GeneralRegressionModel grm = (GeneralRegressionModel)PMMLScope;
-                MiningSchema ms = (MiningSchema)grm.getFromContent("MiningSchema");
-                return ms.getMiningField();               
-                
-            default:
-               return new ArrayList<MiningField>();
-        }
+        return getMiningSchema().getMiningField();
     }
     
     public MiningSchema getMiningSchema()
@@ -125,7 +116,7 @@ public class Scope {
          {
              case "GeneralRegressionModel":
                 GeneralRegressionModel grm = (GeneralRegressionModel)PMMLScope;
-                Object ms = grm.getFromContent("MiningSchema");   
+                Object ms =  this.cu.getFromContent(grm.getContent(), "MiningSchema");      
                 if (ms == null) { 
                     return null;}
                 return (MiningSchema)ms;   

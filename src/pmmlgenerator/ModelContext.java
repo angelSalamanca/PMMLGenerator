@@ -157,19 +157,19 @@ public class ModelContext {
             // MiningSchema
              MiningSchemaBuilder msb = new MiningSchemaBuilder(true, this);
              MiningSchema ms = msb.build(treeModel.getFunctionName());
-             treeModel.addToContent(ms);
+             treeModel.getContent().add(ms);
              this.context.createFieldUniverse(); // update
       
-                OutputBuilder ob = new OutputBuilder();
-               treeModel.addToContent(ob.build(this));
+               OutputBuilder ob = new OutputBuilder();
+               treeModel.getContent().add(ob.build(this));
                 
              // Local Transformations
               TransformationDictionaryBuilder tdb = new TransformationDictionaryBuilder(this.context);
-              treeModel.addToContent(tdb.buildLocal());
+              treeModel.getContent().add(tdb.buildLocal());
               this.context.createFieldUniverse(); // update
               
               NodeBuilder nb = new NodeBuilder(this);              
-              treeModel.addToContent(nb.build(null, generator.intValue(1000,10000)).get(0));
+              treeModel.getContent().add(nb.build(null, generator.intValue(1000,10000)).get(0));
              
             
             return this.treeModel;

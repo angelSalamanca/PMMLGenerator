@@ -2,7 +2,7 @@
 // Este archivo ha sido generado por la arquitectura JavaTM para la implantación de la referencia de enlace (JAXB) XML v2.2.5-2 
 // Visite <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Todas las modificaciones realizadas en este archivo se perderán si se vuelve a compilar el esquema de origen. 
-// Generado el: PM.07.06 a las 10:07:19 PM CEST 
+// Generado el: PM.07.12 a las 12:57:26 PM CEST 
 //
 
 
@@ -71,15 +71,15 @@ import javax.xml.bind.annotation.XmlType;
 public class TreeModel {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "ModelExplanation", namespace = "http://www.dmg.org/PMML-4_2", type = ModelExplanation.class, required = false),
-        @XmlElementRef(name = "Targets", namespace = "http://www.dmg.org/PMML-4_2", type = Targets.class, required = false),
-        @XmlElementRef(name = "Output", namespace = "http://www.dmg.org/PMML-4_2", type = Output.class, required = false),
-        @XmlElementRef(name = "Node", namespace = "http://www.dmg.org/PMML-4_2", type = Node.class, required = false),
         @XmlElementRef(name = "MiningSchema", namespace = "http://www.dmg.org/PMML-4_2", type = MiningSchema.class, required = false),
-        @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_2", type = Extension.class, required = false),
+        @XmlElementRef(name = "ModelExplanation", namespace = "http://www.dmg.org/PMML-4_2", type = ModelExplanation.class, required = false),
+        @XmlElementRef(name = "Output", namespace = "http://www.dmg.org/PMML-4_2", type = Output.class, required = false),
         @XmlElementRef(name = "ModelStats", namespace = "http://www.dmg.org/PMML-4_2", type = ModelStats.class, required = false),
         @XmlElementRef(name = "ModelVerification", namespace = "http://www.dmg.org/PMML-4_2", type = ModelVerification.class, required = false),
-        @XmlElementRef(name = "LocalTransformations", namespace = "http://www.dmg.org/PMML-4_2", type = LocalTransformations.class, required = false)
+        @XmlElementRef(name = "Targets", namespace = "http://www.dmg.org/PMML-4_2", type = Targets.class, required = false),
+        @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_2", type = Extension.class, required = false),
+        @XmlElementRef(name = "LocalTransformations", namespace = "http://www.dmg.org/PMML-4_2", type = LocalTransformations.class, required = false),
+        @XmlElementRef(name = "Node", namespace = "http://www.dmg.org/PMML-4_2", type = Node.class, required = false)
     })
     protected List<Object> content;
     @XmlAttribute(name = "modelName")
@@ -127,15 +127,15 @@ public class TreeModel {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link ModelExplanation }
-     * {@link Targets }
-     * {@link Output }
-     * {@link Node }
      * {@link MiningSchema }
-     * {@link Extension }
+     * {@link ModelExplanation }
+     * {@link Output }
      * {@link ModelStats }
      * {@link ModelVerification }
+     * {@link Targets }
+     * {@link Extension }
      * {@link LocalTransformations }
+     * {@link Node }
      * 
      * 
      */
@@ -358,29 +358,4 @@ public class TreeModel {
         this.isScorable = value;
     }
 
-    public void addToContent(Object item)
-    {
-        if (content == null) {
-            content = new ArrayList<Object>();
-        }
-        this.content.add(item);
-    }
-
-    public Object getFromContent(String name){
-        
-        if (content == null)
-        {
-            return null;
-        }
-        
-        for (Object item: content)
-        {
-            if (item.getClass().getSimpleName().equals(name))
-            {
-                return item;
-            }
-        }
-        return null;
-    }
-    
 }

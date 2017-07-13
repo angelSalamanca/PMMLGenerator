@@ -2,7 +2,7 @@
 // Este archivo ha sido generado por la arquitectura JavaTM para la implantación de la referencia de enlace (JAXB) XML v2.2.5-2 
 // Visite <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Todas las modificaciones realizadas en este archivo se perderán si se vuelve a compilar el esquema de origen. 
-// Generado el: PM.07.06 a las 10:07:22 PM CEST 
+// Generado el: PM.07.12 a las 12:57:29 PM CEST 
 //
 
 
@@ -59,10 +59,10 @@ public class SequenceRule {
 
     @XmlElementRefs({
         @XmlElementRef(name = "AntecedentSequence", namespace = "http://www.dmg.org/PMML-4_3", type = AntecedentSequence.class, required = false),
-        @XmlElementRef(name = "ConsequentSequence", namespace = "http://www.dmg.org/PMML-4_3", type = ConsequentSequence.class, required = false),
-        @XmlElementRef(name = "Delimiter", namespace = "http://www.dmg.org/PMML-4_3", type = Delimiter.class, required = false),
         @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_3", type = Extension.class, required = false),
-        @XmlElementRef(name = "Time", namespace = "http://www.dmg.org/PMML-4_3", type = Time.class, required = false)
+        @XmlElementRef(name = "Time", namespace = "http://www.dmg.org/PMML-4_3", type = Time.class, required = false),
+        @XmlElementRef(name = "Delimiter", namespace = "http://www.dmg.org/PMML-4_3", type = Delimiter.class, required = false),
+        @XmlElementRef(name = "ConsequentSequence", namespace = "http://www.dmg.org/PMML-4_3", type = ConsequentSequence.class, required = false)
     })
     protected List<Object> content;
     @XmlAttribute(name = "id", required = true)
@@ -106,11 +106,11 @@ public class SequenceRule {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link AntecedentSequence }
-     * {@link ConsequentSequence }
-     * {@link Delimiter }
      * {@link Extension }
      * {@link Time }
+     * {@link AntecedentSequence }
+     * {@link Delimiter }
+     * {@link ConsequentSequence }
      * 
      * 
      */
