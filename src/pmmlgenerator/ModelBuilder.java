@@ -98,10 +98,10 @@ public class ModelBuilder {
                 
                 // TODO endTimeVariable, startTimeVariable
                 
-                // Mining Schema
-                
-                MiningSchema ms = buildMiningSchema(true, grm.getFunctionName());
-                cu.addToContent(grm.getContent(), ms);
+                // MiningSchema
+                 MiningSchemaBuilder msb = new MiningSchemaBuilder(true, this.modelContext);
+                 MiningSchema ms = msb.build(grm.getFunctionName());
+                grm.getContent().add(ms);
                 this.context.createFieldUniverse(); // update
                 
                  OutputBuilder ob = new OutputBuilder();
@@ -150,72 +150,6 @@ public class ModelBuilder {
         }
     }
             
-    private MiningSchema buildMiningSchema(Boolean isSupervised, MININGFUNCTION modelFunction) throws Exception
-        {
-            MiningSchema ms = new MiningSchema();
-            List<MiningField> miningFields = ms.getMiningField();
-            Boolean firstField = isSupervised;
-            
-            // Generation of fields based on context
-            List<FieldDescriptor> fieldCatalog = context.getFieldDescriptorsForMiningSchema();
-            
-            
-           for (FieldDescriptor fd : fieldCatalog)
-           {
-                // random pick                
-                double d = this.nameGenerator.doubleValue();
-                if (d<0.75 || this.context.isTDAffected(fd.fieldName))
-                {
-                    MiningField mField = new MiningField();
-                    String fieldName = fd.fieldName;
-                    mField.setName(fieldName);
-                    this.fieldHelper  = new FieldHelper(fieldName, fd.scope);  // value is containerj
-                    this.context.setDataTypeOfMF(mField, this.fieldHelper.getDataType());
-                    // UsageType
-                    if (firstField)
-                    {                        
-                        if (this.fieldHelper.isGRMTargetCompatible(modelFunction))
-                        {
-                            firstField = false;
-                            mField.setUsageType(FIELDUSAGETYPE.TARGET);
-                            this.targetField = mField;
-                            modelContext.setTargetField(this.targetField);
-                            List<Value> values  = this.fieldHelper.getValues();
-                            numTargetCategories = values.size();
-                            categories = new ArrayList<String>();
-                            for (int j=0; j< numTargetCategories; j++)
-                            {
-                                categories.add(values.get(j).getValue());
-                            }
-                            this.modelContext.setCategories(categories);
-                        }                        
-                    }
-                    else
-                    {
-                        if (this.nameGenerator.doubleValue()<0.5)
-                        {
-                             mField.setUsageType(FIELDUSAGETYPE.ACTIVE);
-                        }
-                    }
-                    
-                   if(mField.getUsageType() == FIELDUSAGETYPE.TARGET | this.fieldHelper.isGRMActiveCompatible(modelFunction))
-                   {
-                              mField.setOptype(this.fieldHelper.getOptype());
-                   }       
-                  
-                   // missing value replacement, only sometimes
-                   if (this.nameGenerator.doubleValue()<0.5)
-                   {
-                       mField.setMissingValueReplacement(this.fieldHelper.randomValue());
-                   }                   
-                   
-                    miningFields.add(mField);
-                }  
-          }           
-            System.out.println(" Mining Schema built");
-            return ms;
-        }
-        
              private LocalTransformations  buildLocalTransformations()
         {
             LocalTransformations lt = new LocalTransformations();

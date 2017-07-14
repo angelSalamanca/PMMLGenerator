@@ -7,6 +7,7 @@ package pmmlgenerator;
 
 import java.util.*;
 import pmmlgenerator.util.*;
+import pmmlgenerator.modelbuilders.*;
 import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;    
 import static pmmlgenerator.PMMLGenerator.sentence;
 import pmmlgenerator.util.Scope;
@@ -19,8 +20,8 @@ import pmmlgenerator.util.Scope;
 public class ModelContext {
     
     Object PMMLModel;
-    private GeneralRegressionModel grm;
-    private TreeModel treeModel;
+    public GeneralRegressionModel grm;
+    public  TreeModel treeModel;
     private MiningField targetField;
     private List<String> categories;
     public NameGenerator generator;
@@ -58,7 +59,7 @@ public class ModelContext {
         switch(theClass)
         {
             case "GeneralRegressionModel":
-                grm = (GeneralRegressionModel)PMMLModel;
+                this.grm = (GeneralRegressionModel)PMMLModel;
                 break;
                 
             case "TreeModel":
@@ -142,37 +143,8 @@ public class ModelContext {
       
       public TreeModel buildTreeModel() throws Exception
       {
-            this.treeModel.setModelName(generator.getModelName("Tree")); 
-            Scope treeScope = new Scope(treeModel.getModelName(), treeModel, treeModel.getClass().getSimpleName(), this.context);
-            this.context.setCurrentScope(treeScope);         
-            treeScope.setModelContext(this);
-            
-            // Constraint on functionName
-            
-            this.treeModel.setFunctionName(MININGFUNCTION.valueOf(generator.pickOne(General.GRMFunctions)));
-            System.out.println(" Function Name: " + treeModel.getFunctionName().toString());
-            this.treeModel.setAlgorithmName(sentence.getSentence(2));
-            this.treeModel.setNoTrueChildStrategy(NOTRUECHILDSTRATEGY.valueOf(generator.pickOne(General.treeNoTrueChildStrategies)));
-            
-            // MiningSchema
-             MiningSchemaBuilder msb = new MiningSchemaBuilder(true, this);
-             MiningSchema ms = msb.build(treeModel.getFunctionName());
-             treeModel.getContent().add(ms);
-             this.context.createFieldUniverse(); // update
-      
-               OutputBuilder ob = new OutputBuilder();
-               treeModel.getContent().add(ob.build(this));
-                
-             // Local Transformations
-              TransformationDictionaryBuilder tdb = new TransformationDictionaryBuilder(this.context);
-              treeModel.getContent().add(tdb.buildLocal());
-              this.context.createFieldUniverse(); // update
-              
-              NodeBuilder nb = new NodeBuilder(this);              
-              treeModel.getContent().add(nb.build(null, generator.intValue(1000,10000)).get(0));
-             
-            
-            return this.treeModel;
+          TreeModelBuilder tmb = new TreeModelBuilder(this);
+          return tmb.build();
       }
       
       public String getTargetReferenceCategory(Scope scope) throws Exception

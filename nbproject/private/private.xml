@@ -3,13 +3,7 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/Java%20Projects/PMMLGenerator/src/pmmlgenerator/PMMLGenerator.java</file>
-            <file>file:/D:/Java%20Projects/PMMLGenerator/src/pmmlgenerator/ModelBuilder.java</file>
-            <file>file:/D:/Java%20Projects/PMMLGenerator/src/pmmlgenerator/util/FieldHelper.java</file>
-            <file>file:/D:/Java%20Projects/PMMLGenerator/src/pmmlgenerator/util/OutputBuilder.java</file>
-            <file>file:/D:/Java%20Projects/PMMLGenerator/src/pmmlgenerator/DDDriver.java</file>
-            <file>file:/D:/Java%20Projects/PMMLGenerator/src/pmmlgenerator/ModelContext.java</file>
-            <file>file:/D:/Java%20Projects/PMMLGenerator/src/pmmlgenerator/util/Scope.java</file>
+            <file>file:/D:/Java%20Projects/PMMLGenerator/build/generated-sources/jaxb/jaxb/gdsmodellica/pmmlgenerator/PMML42/Node.java</file>
         </group>
     </open-files>
 </project-private>

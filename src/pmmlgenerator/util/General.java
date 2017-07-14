@@ -23,6 +23,8 @@ public class General {
     public static String[] dfDataTypes = {"STRING", "FLOAT", "DOUBLE"};
 
     public static String[] treeNoTrueChildStrategies = {"RETURN_NULL_PREDICTION", "RETURN_LAST_PREDICTION"}; // all
+    public static String[] SSPBoolean = {"isIn", "isNotIn"};
+    
     public static AttributeConstraintUniverse attributeConstraintUniverse;
     
     

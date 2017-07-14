@@ -28,17 +28,22 @@ public class RandomPredicate {
         switch(modelContext.generator.intValue(1, topPredicate))  // TODO SimpleSet
         {
             case 1:
+                 SimpleSetPredicateBuilder sspb = new SimpleSetPredicateBuilder();
+                SimpleSetPredicate ssp = (SimpleSetPredicate)sspb.build(modelContext);
+                return ssp;
+            
+            // case 1:
             case 2:
                 SimplePredicateBuilder spb = new SimplePredicateBuilder();
                 SimplePredicate sp = (SimplePredicate)spb.build(modelContext);
                 return sp;
+                
             case 3:
             default:
                 CompoundPredicateBuilder cpb = new CompoundPredicateBuilder(generation+1);
                 CompoundPredicate cp = (CompoundPredicate)cpb.build(modelContext);
                 return cp;
-            
-        }   
+                    }   
         
     }
     

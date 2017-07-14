@@ -5,6 +5,7 @@
  */
 package pmmlgenerator.util;
 
+import java.math.BigInteger;
 import java.util.Random;
 import java.util.*;
 import jaxb.gdsmodellica.pmmlgenerator.PMML42.*; 
@@ -367,5 +368,65 @@ public class NameGenerator {
         {
             Integer i = this.intValue(0, DATATYPE.values().length);
             return DATATYPE.values()[i];
+        }
+        
+        public ArrayType getArray(FieldDescriptor fd) throws Exception
+        {
+            ArrayType arraytype = new ArrayType();
+            String xmlQuote = "\"";
+            StringBuilder sb = new StringBuilder();
+            Integer n = this.intValue(1, 7);
+            BigInteger bin = new BigInteger(String.valueOf(n));
+            arraytype.setN(bin);
+
+           
+            
+            List<String> elements = new ArrayList<String>();
+            
+            switch(fd.datatype)
+            {
+                case STRING:
+                    for (int i =0; i<n;i++)
+                    {
+                        sb.append(xmlQuote);
+                        sb.append(this.stringValue(3));
+                        sb.append(xmlQuote);
+                        if (i<(n-1))
+                        {
+                            sb.append(" ");                        
+                        }
+                    }
+                    arraytype.setType("string");
+                    break;
+                case INTEGER:
+                           for (int i =0; i<n;i++)
+                    {                        
+                        sb.append(String.valueOf(this.intValue(-10,10)));
+                        if (i<(n-1))
+                        {
+                            sb.append(" ");                        
+                        }
+                    }
+                    arraytype.setType("int");       
+                    break;
+                case FLOAT:
+                case DOUBLE:
+                    for (int i =0; i<n;i++)
+                    {
+                        sb.append(String.valueOf(this.doubleValue(-10,10)));
+                        if (i<(n-1))
+                        {
+                            sb.append(" ");                        
+                        }
+                    }
+                    arraytype.setType("real");
+                    break;
+                default:
+                    throw new Exception();
+            }            
+            
+            arraytype.setContent(sb.toString());
+            
+          return arraytype;
         }
 }
