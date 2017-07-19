@@ -11,20 +11,6 @@
     <target name="jaxb-code-generation" depends="xjc-typedef-target,-do-init,-init-macrodef-javac">
         <mkdir dir="${build.generated.sources.dir}/jaxb" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
         <mkdir dir="build/generated/jaxbCache" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
-        <mkdir dir="build/generated/jaxbCache/PMML42"/>
-        <xjc package="jaxb.gdsmodellica.pmmlgenerator.PMML42" destdir="build/generated/jaxbCache/PMML42" catalog="catalog.xml">
-            <classpath>
-                <pathelement location="${src.dir}"/>
-                <pathelement path="${jaxbwiz.xjcrun.classpath}"/>
-            </classpath>
-            <arg value="-xmlschema"/>
-            <schema file="xml-resources/jaxb/PMML42/pmml-4-2.mod..xsd"/>
-            <depends file="xml-resources/jaxb/PMML42/pmml-4-2.mod..xsd"/>
-            <produces dir="build/generated/jaxbCache/PMML42"/>
-        </xjc>
-        <copy todir="${build.generated.sources.dir}/jaxb">
-            <fileset dir="build/generated/jaxbCache/PMML42"/>
-        </copy>
         <mkdir dir="build/generated/jaxbCache/PMML43"/>
         <xjc package="jaxb.gdsmodellica.pmmlgenerator.PMML43" destdir="build/generated/jaxbCache/PMML43" catalog="catalog.xml">
             <classpath>

@@ -8,7 +8,7 @@ package pmmlgenerator.util;
 import java.math.BigInteger;
 import java.util.Random;
 import java.util.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*; 
+import pmmlgenerator.PMML42.*; 
 
 /**
  *
@@ -19,10 +19,13 @@ public class NameGenerator {
     private Random randomGenerator;
     private Map<String,Integer> fieldNums;
     private String derivedFieldPreffix = "";
+   private String[] words = {"alcazar", "bingle", "canorous", "deedy", "flews", "gaita", "higgler", "ingurgigate", "jumentouous", "kenspeckle", "lobola", "martlet", "nagware", "apparel", "befall","commend", "fare"}; 
+   
    
     public NameGenerator()
     {
         randomGenerator = new Random();
+        this.randomGenerator.setSeed(98766789);
         this.fieldNums = new HashMap<String,Integer>();
         this.fieldNums.put("String",1);
         this.fieldNums.put("Integer",1);
@@ -109,7 +112,7 @@ public class NameGenerator {
         }
         catch (Exception e)
         {
-                throw new Exception("Unexpected field type");        
+                throw new Exception("Unexpected field type",e);        
         }
                
         return String.valueOf(varNum);
@@ -119,9 +122,9 @@ public class NameGenerator {
     {
         String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuilder salt = new StringBuilder();
-        Random rnd = new Random();
+        
         while (salt.length() < numChars) { // length of the random string.
-            int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+            int index = (int) (this.randomGenerator.nextFloat() * SALTCHARS.length());
             salt.append(SALTCHARS.charAt(index));
         }
 
@@ -145,7 +148,7 @@ public class NameGenerator {
         
     }
     
-    public List<Integer> intCutoffs(Integer totalObs, Integer numCuts )
+    public List<Integer> intCutoffs(Integer totalObs, Integer numCuts ) throws Exception
     {
         List<Integer> cutoffs = new ArrayList<Integer>();
         Integer a = 0;
@@ -237,10 +240,16 @@ public class NameGenerator {
          return d.toString();
      }
      
-     public int intValue(int a , int b)
+     public int intValue(int a , int b) throws Exception
      {
+         try {
          Integer i = randomGenerator.nextInt(b-a+1)+a;
          return i;
+         }
+         catch (Exception e) {
+             General.witness("intValue: " + String.valueOf(a) + " " +String.valueOf(b));
+             throw new Exception("intValue", e);
+         }         
      }
      
      public double doubleValue()
@@ -309,7 +318,7 @@ public class NameGenerator {
                           }
                         catch (Exception e)
                         {
-                            String m = e.getMessage();
+                            throw new Exception("getValue", e);
                         }
                     }
                     // Try values
@@ -364,7 +373,7 @@ public class NameGenerator {
             }
         }
         
-        public DATATYPE pickDataType()
+        public DATATYPE pickDataType() throws Exception
         {
             Integer i = this.intValue(0, DATATYPE.values().length);
             return DATATYPE.values()[i];
@@ -429,4 +438,19 @@ public class NameGenerator {
             
           return arraytype;
         }
+        
+    public String getSentence(int numWords)
+    {
+        StringBuilder sb = new StringBuilder();
+        
+        for (int i =0; i<numWords; i++)
+        {
+            int wordIndex = randomGenerator.nextInt(words.length-1);
+            sb.append(words[wordIndex]);
+            sb.append(" ");
+        }
+        sb.deleteCharAt(sb.length()-1);
+        
+        return sb.toString();
+    }
 }

@@ -8,7 +8,8 @@ package pmmlgenerator.util;
 import java.util.*;
 import java.lang.*;
 import java.lang.reflect.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;    
+import pmmlgenerator.PMML42.*;    
+import pmmlgenerator.*;
 
 
 /**
@@ -26,6 +27,7 @@ public class FieldHelper {
     private NameGenerator generator;
     private ContentUtil cu;
     private Context context;
+    private ModelContext modelContext;
     
     
     public FieldHelper(Object genericField) throws Exception
@@ -36,12 +38,13 @@ public class FieldHelper {
         this.cu = new ContentUtil();
     }    
     
-    public FieldHelper(String fieldName, Scope scope) throws Exception
+    public FieldHelper(String fieldName, ModelContext thisMContext) throws Exception
     {
-        Object container = scope.PMMLScope;
-        PMML pmml = scope.getRootContainer();
-        this.context = scope.context;
-        this.cu = scope.cu;
+        this.modelContext = thisMContext;
+        Object container = this.modelContext.getModel();
+        PMML pmml = PMMLGenerator.pmml;
+        this.context = this.modelContext.context;
+        this.cu = this.modelContext.cu;
         
         String containerClass = container.getClass().getSimpleName();
         Object content = null;
@@ -76,10 +79,18 @@ public class FieldHelper {
           case "TreeModel":
                TreeModel treeModel = (TreeModel)container;
                content = cu.getFromContent(treeModel.getContent(), "MiningSchema");
-              lt = (LocalTransformations)cu.getFromContent(treeModel.getContent(),"LocalTransformations");
+               lt = (LocalTransformations)cu.getFromContent(treeModel.getContent(),"LocalTransformations");
                isModel = true;
                addTransfDict = true;
                break; 
+          case "MiningModel":
+               MiningModel miningModel = (MiningModel)container;
+               content = cu.getFromContent(miningModel.getContent(), "MiningSchema");
+               lt = (LocalTransformations)cu.getFromContent(miningModel.getContent(),"LocalTransformations");
+               isModel = true;
+               addTransfDict = true;
+               break; 
+              
           case "DefineFunction":
                 DefineFunction df  = (DefineFunction)container;
                 for (ParameterField pf : df.getParameterField()) {
@@ -118,7 +129,7 @@ public class FieldHelper {
                                
             if (addTransfDict && this.theField==null)
             {       
-            pmml = scope.getRootContainer();
+            pmml = PMMLGenerator.pmml;
              for (DerivedField derf : pmml.getTransformationDictionary().getDerivedField()) {
                 if (derf.getName().equals(fieldName))
                 {
@@ -224,31 +235,6 @@ public class FieldHelper {
         }
     }
     
-    public Boolean isGRMTargetCompatible(MININGFUNCTION modelFunction) throws Exception
-    {
-        OPTYPE optype = getOptype();
-        DATATYPE datatype = getDataType();
-        
-        switch(modelFunction)
-        {
-            case CLASSIFICATION:
-                    return optype == OPTYPE.CATEGORICAL && this.theClass.equals("DataField") && this.dField.getValue().size()>1;
-            case REGRESSION:    
-                    return optype == OPTYPE.CONTINUOUS && (datatype == DATATYPE.DOUBLE || datatype == DATATYPE.FLOAT);
-            default:
-                throw new Exception("Unexpected model function");
-                
-         }
-        
-    }
-    
-    public Boolean isGRMActiveCompatible(MININGFUNCTION modelFunction)   throws Exception
-    {
-        OPTYPE optype = getOptype();
-        return optype == OPTYPE.CONTINUOUS;
-        
-    }
-    
     public List<Value> getValues() throws Exception
     {
          switch(this.theClass)
@@ -256,7 +242,13 @@ public class FieldHelper {
             case "DataField":
                 return dField.getValue();
             case "MiningField":
-                return new ArrayList<Value>();
+                Object ancestor = this.context.getFieldFromMF(this.mField);
+                if (ancestor instanceof DataField)
+                {
+                    return ((DataField)ancestor).getValue();
+                }
+                    return ((DerivedField)ancestor).getValue();
+                
             case "DerivedField":
                 return derField.getValue();
             default:
@@ -269,28 +261,7 @@ public class FieldHelper {
         return this.theClass;
     }
     
-    public String randomValue() throws Exception
-    {
-        if (this.dField != null)
-        {
-            return this.generator.getValue(dField);
-        }
-        
-         switch(this.getDataType())
-        {
-            case STRING:
-                return generator.stringValue(3);
-            case INTEGER:
-                int n = generator.intValue(-1000,1000);
-                return String.valueOf(n);
-            case FLOAT:
-                return String.valueOf((float)generator.doubleValue());
-            case DOUBLE:    
-                return String.valueOf(generator.doubleValue());
-            default:
-                throw new Exception("Unexpected class");
-        }
-    }
+   
 
     public List<Double> getIntervals(Integer numIntervals)
     {

@@ -11,7 +11,7 @@ package pmmlgenerator.util;
  */
 public class General {
     
-    public static String[] models = {"GeneralRegressionModel", "TreeModel"};
+    public static String[] models = {"GeneralRegressionModel", "TreeModel", "MiningModel"};
     public static  String[] relationalOperators = {"equal", "notEqual", "lessThan", "lessOrEqual", "greaterThan", "greaterOrEqual", "isMissing", "isNotMissing"};
     public static  String[] stringRelationalOperators = {"equal", "notEqual", "isMissing", "isNotMissing"};
     public static String[] booleanOperators = {"or", "and", "xor"};  // TODO surrogate  
@@ -25,7 +25,21 @@ public class General {
     public static String[] treeNoTrueChildStrategies = {"RETURN_NULL_PREDICTION", "RETURN_LAST_PREDICTION"}; // all
     public static String[] SSPBoolean = {"isIn", "isNotIn"};
     
+    public static String[] castIntegerOptions = {"round", "ceiling","floor"};
+    public static String[] multipleModelMethods ={ "MAJORITY_VOTE", "WEIGHTED_MAJORITY_VOTE", "AVERAGE", "WEIGHTED_AVERAGE", "MEDIAN", "MAX", "SUM", "SELECT_FIRST", "SELECT_ALL", "MODEL_CHAIN"};
+   
     public static AttributeConstraintUniverse attributeConstraintUniverse;
     
+    public static Integer modelLevel;
     
+    public static void witness(String line)
+    {
+        String indenter = new String(new char[2*modelLevel]).replace('\0', ' ');
+       System.out.println(indenter + line);
+    }
+    
+    public static void addToModelLevel(Integer step)
+    {
+        modelLevel = java.lang.Math.max(0, modelLevel + step);
+    }
 }

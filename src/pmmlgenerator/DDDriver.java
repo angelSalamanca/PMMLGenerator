@@ -8,7 +8,7 @@ package pmmlgenerator;
 import java.util.ArrayList;
 import java.util.List;
 import pmmlgenerator.util.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;       
+import pmmlgenerator.PMML42.*;       
 import static pmmlgenerator.PMMLGenerator.dddriver;
 
 /**
@@ -149,10 +149,12 @@ public class DDDriver {
             df.setDataType(DATATYPE.INTEGER);
             df.setName(nameGenerator.getDataFieldName("Integer"));
             df.setDisplayName("Display "  + df.getName() );
-           createIntervals(continuousIntegerIntervals, DATATYPE.INTEGER, df);
-           createValues(continuousIntegerValues, DATATYPE.INTEGER, df);
-            
-            
+            if (this.nameGenerator.doubleValue()<0.7) {
+                       createIntervals(continuousIntegerIntervals, DATATYPE.INTEGER, df);
+            }
+            if (this.nameGenerator.doubleValue()<0.7) {
+                createValues(continuousIntegerValues, DATATYPE.INTEGER, df);
+            }            
             myDfs.add(df);
         }
         return myDfs;
@@ -169,9 +171,12 @@ public class DDDriver {
             df.setDataType(DATATYPE.FLOAT);
             df.setName(nameGenerator.getDataFieldName("Float"));
             df.setDisplayName("Display "  + df.getName() );
-           createIntervals(continuousFloatIntervals, DATATYPE.FLOAT, df);
-          createValues(continuousFloatValues, DATATYPE.FLOAT, df);
-                     
+            if (this.nameGenerator.doubleValue()<0.7) {
+                createIntervals(continuousFloatIntervals, DATATYPE.FLOAT, df);
+            }
+            if (this.nameGenerator.doubleValue()<0.7) {
+                createValues(continuousFloatValues, DATATYPE.FLOAT, df);
+            }         
             myDfs.add(df);
         }
         return myDfs;
@@ -188,9 +193,12 @@ public class DDDriver {
             df.setDataType(DATATYPE.DOUBLE);
             df.setName(nameGenerator.getDataFieldName("Double"));
             df.setDisplayName("Display "  + df.getName() );            
-            createIntervals(continuousDoubleIntervals, DATATYPE.DOUBLE, df);
-            createValues(continuousDoubleValues, DATATYPE.DOUBLE, df);
-            
+            if (this.nameGenerator.doubleValue()<0.7) {
+                createIntervals(continuousDoubleIntervals, DATATYPE.DOUBLE, df);
+            }
+            if (this.nameGenerator.doubleValue()<0.7) {
+                createValues(continuousDoubleValues, DATATYPE.DOUBLE, df);
+            }
             myDfs.add(df);
         }
         return myDfs;

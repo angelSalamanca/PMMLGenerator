@@ -7,7 +7,7 @@ package pmmlgenerator.util;
 
 import java.util.*;
 import pmmlgenerator.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;
+import pmmlgenerator.PMML42.*;
 
 /**
  *
@@ -20,6 +20,11 @@ public class MiningSchemaBuilder {
     private NameGenerator generator;
     private Context context;
     private FieldHelper fieldHelper;
+    private FieldDescriptor fieldDescriptor, targetDescriptor;
+    private  List<FieldDescriptor> fieldCatalog ;
+    
+    public Integer numTargetCategories;
+    public  List<String>categories;
     
     public MiningSchemaBuilder(Boolean issupervised, ModelContext thisMContext)
     {
@@ -32,64 +37,105 @@ public class MiningSchemaBuilder {
     public MiningSchema build(MININGFUNCTION modelFunction) throws Exception
     {
             MiningSchema ms = new MiningSchema();
-            List<MiningField> miningFields = ms.getMiningField();
-            Boolean firstField = isSupervised;
+            List<MiningField> miningFields = ms.getMiningField();            
             
             // Generation of fields based on context
-            List<FieldDescriptor> fieldCatalog = this.modelContext.context.getFieldDescriptorsForMiningSchema();
+            this.fieldCatalog = this.modelContext.context.getFieldDescriptorsForMiningSchema();
+            
+            miningFields.add(setTarget(modelFunction));
+            
             for (FieldDescriptor fd : fieldCatalog)
            {
+               if (fd == this.targetDescriptor )  // skip target
+               {
+                   continue;
+               }
                 // random pick                
                 double d = this.generator.doubleValue();
-                if (d<0.75 || this.context.isTDAffected(fd.fieldName))
+                if (d<0.75 || this.context.isTDAffected(fd.fieldName) )  // to force a target 
                 {
                     MiningField mField = new MiningField();
                     String fieldName = fd.fieldName;
                     mField.setName(fieldName);
-                    this.fieldHelper  = new FieldHelper(fieldName, fd.scope);  // value is containerj
-                    this.context.setDataTypeOfMF(mField, this.fieldHelper.getDataType());
-                    // UsageType
-                    if (firstField)
-                    {                        
-                        if (this.fieldHelper.isGRMTargetCompatible(modelFunction))
-                        {
-                            firstField = false;
-                            mField.setUsageType(FIELDUSAGETYPE.TARGET);                          
-                            modelContext.setTargetField(mField);
-                            List<Value> values  = this.fieldHelper.getValues();
-                            Integer numTargetCategories = values.size();
-                            List<String>categories = new ArrayList<String>();
-                            for (int j=0; j< numTargetCategories; j++)
-                            {
-                                categories.add(values.get(j).getValue());
-                            }
-                            this.modelContext.setCategories(categories);
-                        }                        
-                    }
-                    else
+                    Object ancestor = fd.modelContext.getFieldFromMF(mField);
+                    if (ancestor instanceof DataField)
                     {
+                        DataField df = (DataField)ancestor;
+                        this.fieldDescriptor = this.modelContext.context.fieldUniverse.get("PMML." + df.getName());  // . for root Scope                        
+                    }
+                    else {  //DerivedField
+                        DerivedField derf = (DerivedField)ancestor;
+                        this.fieldDescriptor = this.modelContext.context.fieldUniverse.get("PMML." + derf.getName());  // . for root Scope                        
+                    }                    
+                  //  this.context.setDataTypeOfMF(mField, this.fieldHelper.getDataType());
+                    // UsageType
+                   
                         if (this.generator.doubleValue()<0.5)
                         {
                              mField.setUsageType(FIELDUSAGETYPE.ACTIVE);
-                        }
-                    }
+                        }                   
                     
-                   if(mField.getUsageType() == FIELDUSAGETYPE.TARGET | this.fieldHelper.isGRMActiveCompatible(modelFunction))
+                   if(this.generator.doubleValue()<0.5)
                    {
-                              mField.setOptype(this.fieldHelper.getOptype());
+                              mField.setOptype(this.fieldDescriptor.getOpType());
                    }       
                   
                    // missing value replacement, only sometimes
                    if (this.generator.doubleValue()<0.5)
                    {
-                       mField.setMissingValueReplacement(this.fieldHelper.randomValue());
+                       mField.setMissingValueReplacement(this.fieldDescriptor.randomValue());
                    }                   
                    
                     miningFields.add(mField);
                 }  
           }           
-            System.out.println(" Mining Schema built");
+            General.witness("  Mining Schema built");
             return ms;
     }
     
+    private MiningField setTarget(MININGFUNCTION modelFunction) throws Exception
+    {
+        
+          Boolean firstField = isSupervised;
+          MiningField mField = new MiningField();
+           
+            // Two options. Drag along from parent model or pick one randomly
+            
+            if (this.modelContext.context.getCurrentContext().isSecondOrMore()) // ??
+            {
+                // From parent
+                ModelContext parentContext = this.modelContext.context.getCurrentContext().getParent();
+                // TODO
+            }
+            else  // random compatible field
+            {
+                   for (FieldDescriptor fd : fieldCatalog)
+                   {
+                     if (fd.isGRMTargetCompatible(modelFunction))
+                        {                           
+                            this.targetDescriptor = fd;                            
+                            break;
+                        }                        
+                    }
+                
+            }
+
+            mField.setUsageType(FIELDUSAGETYPE.TARGET);        
+            mField.setName(this.targetDescriptor.fieldName);
+            
+            modelContext.setTargetField(mField);
+            modelContext.setTargetFieldDescriptor(this.targetDescriptor);
+            List<Value> values  = this.targetDescriptor.getValues();
+            this.numTargetCategories = values.size();
+            this.categories = new ArrayList<String>();
+            for (int j=0; j< numTargetCategories; j++)
+            {
+                this.categories.add(values.get(j).getValue());
+            }
+            this.modelContext.setCategories(categories);
+                          
+            return mField;
+          
+    
+    }
 }

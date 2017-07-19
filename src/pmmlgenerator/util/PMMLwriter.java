@@ -11,7 +11,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;        
+import pmmlgenerator.PMML42.*;        
 import static pmmlgenerator.PMMLGenerator.pmml;
 
 /**
@@ -46,7 +46,7 @@ public class PMMLwriter {
          }
          catch (JAXBException  e)
          {
-             throw new Exception("JAXB excepion");
+             throw new Exception("JAXB excepion", e);
          }
     }
     
@@ -83,7 +83,7 @@ public class PMMLwriter {
          }
          catch (Exception e)
          {
-             throw new Exception("writeData exception: " + e.getMessage());
+             throw new Exception("writeData exception: " + e.getMessage(), e);
          }
     }
     

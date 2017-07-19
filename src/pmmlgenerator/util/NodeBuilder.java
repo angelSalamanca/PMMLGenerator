@@ -8,7 +8,7 @@ package pmmlgenerator.util;
 import java.util.*;
 import pmmlgenerator.*;
 import pmmlgenerator.predicates.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;    
+import pmmlgenerator.PMML42.*;    
 
 
 /**
@@ -130,8 +130,8 @@ public class NodeBuilder {
          }
         catch (Exception e)
                 {
-                    System.out.println("*** NodeBuilder.Build  "+e.getMessage());
-                    throw new Exception();
+                    General.witness("*** NodeBuilder.Build  "+e.getMessage());
+                    throw new Exception("NodeBuilder", e);
                 }
  
         if (!isRoot)
@@ -143,7 +143,7 @@ public class NodeBuilder {
         return nl;      
     }
     
-    private List<Object> buildScoreDistribution(Integer numObservations)
+    private List<Object> buildScoreDistribution(Integer numObservations) throws Exception
     {
         List<Object> sds = new ArrayList<Object>();   
         

@@ -7,7 +7,7 @@ package pmmlgenerator.predicates;
 
 import java.util.*;
 import pmmlgenerator.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;    
+import pmmlgenerator.PMML42.*;    
 import pmmlgenerator.util.*;
 
 
@@ -44,6 +44,24 @@ public class RandomPredicate {
                 CompoundPredicate cp = (CompoundPredicate)cpb.build(modelContext);
                 return cp;
                     }   
+        
+    }
+    
+    public Object getPredicate(ModelContext modelContext) throws Exception
+    {
+        
+        switch(modelContext.generator.intValue(1, 2))  // TODO SimpleSet
+        {
+            case 1:
+                return new True();
+            
+            case 2:
+            default:
+                SimplePredicateBuilder spb = new SimplePredicateBuilder();
+                SimplePredicate sp = (SimplePredicate)spb.build(modelContext);
+                return sp;
+            
+        }   
         
     }
     

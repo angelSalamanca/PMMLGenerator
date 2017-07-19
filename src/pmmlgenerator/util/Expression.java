@@ -6,7 +6,7 @@
 package pmmlgenerator.util;
 
 import java.util.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;     
+import pmmlgenerator.PMML42.*;     
 /**
  *
  * @author Angel Salamanca

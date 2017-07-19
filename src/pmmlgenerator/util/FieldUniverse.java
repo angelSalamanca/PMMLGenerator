@@ -5,8 +5,9 @@
  */
 package pmmlgenerator.util;
 
+import pmmlgenerator.*;
 import java.util.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;    
+import pmmlgenerator.PMML42.*;    
 
 /**
  *
@@ -19,26 +20,35 @@ public class FieldUniverse {
     private Map<String, FieldDescriptor> fields;
     
     private Context context;
+    private PMML pmml;
     
     public FieldUniverse(Context thiscontext) throws Exception
     {
         this.context = thiscontext;
         fields = new HashMap<String, FieldDescriptor>();
+        this.pmml = PMMLGenerator.pmml;
         
-        if (this.context.getCurrentScope().isDefineFunction())
-        {
-            addParameterFields();
+        try {
+            if (this.context.getCurrentContext().isDefineFunction())
+            {
+                addParameterFields();
+            }
+            else
+            {        
+                addDataAndTransformationDictionary();
+        
+                 ModelContext slidingContext = this.context.getCurrentContext();
+                while (!slidingContext.isRoot())
+                {
+                    addLocalFields(slidingContext);            
+                    slidingContext = slidingContext.getParent();
+                } 
+            }
         }
-        else
-        {        
-        addDataAndTransformationDictionary();
-        
-        Scope slidingScope = this.context.getCurrentScope();
-        while (!slidingScope.isRoot())
+        catch (Exception e)
         {
-            addLocalFields(slidingScope);            
-            slidingScope = slidingScope.getParent();
-        } 
+            General.witness("FieldUniverse "+ e.getMessage());
+            throw new Exception("FieldUniverse",e);
         }
     }
     
@@ -54,14 +64,14 @@ public class FieldUniverse {
     
     private void addDataAndTransformationDictionary()
     {        
-        PMML pmml = (PMML)this.context.getRootScope().getPMMLScope();
-        String ns = this.context.getRootScope().getName() + ".";
+        
+        String ns = this.context.getRootContext().getName() + ".";
         
         if (pmml.getDataDictionary() != null)
                 {
                         for (DataField df : pmml.getDataDictionary().getDataField())
-                        {
-                            fields.put(ns+df.getName(), new FieldDescriptor(df.getName(), FieldType.DataField, 0, this.context.getRootScope(), df.getOptype(), df.getDataType()));       
+                        {                            
+                            fields.put(ns+df.getName(), new FieldDescriptor(df.getName(), FieldType.DataField, 0, this.context.getRootContext(), df.getOptype(), df.getDataType(), df));       
                         }     
                 }        
         
@@ -69,32 +79,32 @@ public class FieldUniverse {
            {
             for (DerivedField derf : pmml.getTransformationDictionary().getDerivedField())
             {
-                fields.put(ns+derf.getName(), new FieldDescriptor(derf.getName(), FieldType.DerivedField, 0, this.context.getRootScope(), derf.getOptype(), derf.getDataType()));       
+                fields.put(ns+derf.getName(), new FieldDescriptor(derf.getName(), FieldType.DerivedField, 0, this.context.getRootContext(), derf.getOptype(), derf.getDataType(), derf));       
             }     
         }
     }
     
-    private void addLocalFields(Scope localScope) throws Exception
+    private void addLocalFields(ModelContext localContext) throws Exception
     {
         
-        Integer level = localScope.getLevel();
-          String ns = localScope.getName() + ".";
+        Integer level = localContext.getLevel();
+        String ns = localContext.getName() + ".";
        
-        if (localScope.getMiningSchema()!=null)
+        if (localContext.getMiningSchema()!=null)
         {
-            for (MiningField mf : localScope.readMiningFields())
+            for (MiningField mf : localContext.readMiningFields())
             {
                 DATATYPE datatype = this.context.getDataTypeOfMF(mf);
                OPTYPE optype = this.context.getOpTypeOfMF(mf);
                 
-                fields.put(ns+mf.getName(), new FieldDescriptor(mf.getName(), FieldType.MiningField, level, localScope, optype, datatype));       
+                fields.put(ns+mf.getName(), new FieldDescriptor(mf.getName(), FieldType.MiningField, level, localContext, optype, datatype, mf));       
             }     
         }
-           if (localScope.getLocalTransformations()!=null)
+           if (localContext.getLocalTransformations()!=null)
            {
-        for (DerivedField derf : localScope.readLocalDerivedFields())
+        for (DerivedField derf : localContext.readLocalDerivedFields())
             {
-                fields.put(ns+derf.getName(), new FieldDescriptor(derf.getName(), FieldType.DerivedField, level, localScope, derf.getOptype(), derf.getDataType()));       
+                fields.put(ns+derf.getName(), new FieldDescriptor(derf.getName(), FieldType.DerivedField, level, localContext, derf.getOptype(), derf.getDataType(), derf));       
             }
            }
     }
@@ -116,7 +126,7 @@ public class FieldUniverse {
         return fds;
    }
      
-     public List<FieldDescriptor> getFieldDescriptors(FieldType thisType, Scope scope) throws Exception
+     public List<FieldDescriptor> getFieldDescriptors(FieldType thisType, ModelContext modelContext) throws Exception
        {
             List<FieldDescriptor> fds = this.getFieldDescriptors(thisType);
             
@@ -125,7 +135,7 @@ public class FieldUniverse {
             while (it.hasNext())
             {
                 FieldDescriptor fd  = it.next();
-                if (fd.scope.getPMMLScope() != scope.PMMLScope)
+                if (fd.modelContext != modelContext)
                 {
                     it.remove();
                 }
@@ -133,12 +143,12 @@ public class FieldUniverse {
             return fds;
        }
      
-     private void addParameterFields()
+     private void addParameterFields() throws Exception
      {
-         DefineFunction df = (DefineFunction)this.context.getCurrentScope().PMMLScope;
+         DefineFunction df = (DefineFunction)this.context.getCurrentContext().getModel();
          for (ParameterField pf : df.getParameterField())
          {
-                fields.put(pf.getName(), new FieldDescriptor(pf.getName(), FieldType.ParameterField, 0, this.context.getCurrentScope(), null, null));       
+                fields.put(pf.getName(), new FieldDescriptor(pf.getName(), FieldType.ParameterField, 0, this.context.getCurrentContext(), null, null, pf));       
          }
      }
     

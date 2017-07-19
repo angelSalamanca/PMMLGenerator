@@ -6,7 +6,7 @@
 package pmmlgenerator.predicates;
 
 import pmmlgenerator.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;    
+import pmmlgenerator.PMML42.*;    
 import pmmlgenerator.util.*;
 
 /**

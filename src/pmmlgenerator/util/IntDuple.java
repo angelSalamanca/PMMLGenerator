@@ -25,6 +25,7 @@ public class IntDuple {
         b=bb;      
         
         this.randomGenerator = new Random();
+        this.randomGenerator.setSeed(98766789);
         this.refresh();
          }
     

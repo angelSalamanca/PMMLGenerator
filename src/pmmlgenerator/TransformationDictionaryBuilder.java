@@ -5,8 +5,9 @@
  */
 package pmmlgenerator;
 
+import pmmlgenerator.util.DerivedFieldBuilder;
 import java.util.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;
+import pmmlgenerator.PMML42.*;
 import pmmlgenerator.util.*;
 
 /**
@@ -21,10 +22,10 @@ public class TransformationDictionaryBuilder {
     
     public TransformationDictionaryBuilder(Context thisContext)
     {
-        pmml = (PMML)thisContext.getRootScope().getPMMLScope();
+        pmml = PMMLGenerator.pmml;
         generator = new NameGenerator();      
         this.context = thisContext;
-        if(this.context.getCurrentScope().isRoot())
+        if(this.context.getCurrentContext().isRoot())
         {
             this.generator.setDerivedPreffix("Global");
         }
@@ -55,6 +56,7 @@ public class TransformationDictionaryBuilder {
             addDerivedFields(lts.getDerivedField());
         }          
         
+        General.witness("  Local Transformations built");
         return lts;
     } 
     
@@ -105,11 +107,28 @@ public class TransformationDictionaryBuilder {
            fields.add(derF);
        }
        
-       
+       Boolean success;
        for (DerivedField derF : fields)
        {
-           DerivedFieldBuilder dfb = new DerivedFieldBuilder(derF, this.generator, this.context);
-           derF = dfb.build();
+           DerivedFieldBuilder dfb = new DerivedFieldBuilder(derF, this.generator, this.context, false);
+           // several attempts
+           success = false;
+           attempts:
+           for (int  tries = 0; tries<9; tries++)
+           {
+               try
+               {
+                   derF = dfb.build();
+                   success = true;
+                   break attempts;
+               }
+               catch (Exception e)
+               {} // one more attempt           
+           }
+           if (!success)
+            {throw new Exception("unable to build Derived Field");}
+           
+           
        }
        
     }
@@ -141,14 +160,14 @@ public class TransformationDictionaryBuilder {
                 pfl.add(pf);
             }
             
-            Scope scope = new Scope(df.getName(), df, df.getClass().getSimpleName(), this.context);
-            this.context.setCurrentScope(scope);
+            ModelContext dfContext = new ModelContext(this.context, df, df.getName());
+            this.context.setCurrentContext(dfContext);
             
            DerivedField derF = new DerivedField();
            derF.setName("Instrumental");
            derF.setDataType(df.getDataType());
            derF.setOptype(df.getOptype());
-           DerivedFieldBuilder dfb = new DerivedFieldBuilder(derF, this.generator, this.context);
+           DerivedFieldBuilder dfb = new DerivedFieldBuilder(derF, this.generator, this.context, true);
            derF = dfb.build();
            
            if (derF.getConstant()!= null) {df.setConstant(derF.getConstant());  }           

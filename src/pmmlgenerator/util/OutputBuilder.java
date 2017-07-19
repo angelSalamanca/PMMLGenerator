@@ -6,7 +6,7 @@
 package pmmlgenerator.util;
 
 import java.util.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;    
+import pmmlgenerator.PMML42.*;    
 import pmmlgenerator.ModelContext;
 
 /**
@@ -19,7 +19,7 @@ public class OutputBuilder {
 
     public OutputBuilder()
 {
-    this.generator = new NameGenerator();
+   
 }
 
     public Output build(ModelContext modelContext) throws Exception
@@ -27,7 +27,8 @@ public class OutputBuilder {
         Output output = new Output();
         OutputField of;
         MiningField targetField = modelContext.getTargetField();
-        
+         this.generator = modelContext.generator;
+         
         if (modelContext.hasPredictedValue())
         {
             of = new OutputField();
@@ -51,7 +52,7 @@ public class OutputBuilder {
             }
         }
         
-        System.out.println(" Output built");
+        General.witness("  Output built");
         return output;
     }
 }

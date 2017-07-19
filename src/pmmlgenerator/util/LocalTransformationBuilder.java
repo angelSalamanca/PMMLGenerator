@@ -5,7 +5,7 @@
  */
 package pmmlgenerator.util;
 
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;
+import pmmlgenerator.PMML42.*;
 import pmmlgenerator.*;
 import java.util.*;
 

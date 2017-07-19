@@ -7,7 +7,7 @@ package pmmlgenerator.predicates;
 
 import java.util.*;
 import pmmlgenerator.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;    
+import pmmlgenerator.PMML42.*;    
 import pmmlgenerator.util.*;
 
 /**
@@ -25,7 +25,7 @@ public class SimplePredicateBuilder extends PredicateBuilder {
           List<FieldDescriptor> fds = modelContext.context.getFieldDescriptorsForModel(); // all kind of fields: MS, TD and LT
           fds = modelContext.context.keepContinuousFDS(fds);
           FieldDescriptor fd = fds.get(modelContext.generator.intValue(0, fds.size()-1));
-          FieldHelper fh = new FieldHelper(fd.fieldName, fd.scope);
+          FieldHelper fh = new FieldHelper(fd.fieldName, fd.modelContext);
           sp.setField(fd.fieldName);
           DATATYPE datatype = fh.getDataType();
            

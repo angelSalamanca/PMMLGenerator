@@ -7,7 +7,7 @@ package pmmlgenerator.util;
 
 import java.util.*;
 import javax.xml.parsers.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;
+import pmmlgenerator.PMML42.*;
 import pmmlgenerator.util.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Document;

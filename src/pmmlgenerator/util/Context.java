@@ -6,8 +6,9 @@
 package pmmlgenerator.util;
 
 import pmmlgenerator.util.FieldUniverse.FieldType;
+import pmmlgenerator.*;
 import java.util.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;        
+import pmmlgenerator.PMML42.*;        
 
 /**
  *
@@ -15,93 +16,79 @@ import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;
  */
 public class Context {
     
-   private Scope rootScope;
-   private Scope currentScope;
-   private NameGenerator generator;
+   private ModelContext rootContext;
+   private ModelContext currentContext;
+   public NameGenerator generator;
    private List<BuiltinFunction> builtInFunctions;
    private List<BuiltinFunction> safeFunctions;
    private List<BuiltinFunction> stringBuiltInFunctions;
-   private FieldUniverse fieldUniverse;
+   public FieldUniverse fieldUniverse;
    private Map<String, Boolean> tdAffectedFields;
-   private List<FieldDescriptor> fds;
    private Integer selected;
    private ContentUtil cu;
+   private List<FieldDescriptor> fds;
    
    
-   public Context(Scope scope) throws Exception
-   {
-       this.rootScope = scope;      
+   public Context() throws Exception
+   {     
        this.generator = new NameGenerator();
        this.builtInFunctions = populateBuiltInFunctions();
        this.safeFunctions = new ArrayList<BuiltinFunction>();
        this.stringBuiltInFunctions = populateStringBuiltinFunctions();
-       this.setCurrentScope(scope);
+       this.rootContext = new ModelContext(this, "PMML");
+       this.setCurrentContext(this.rootContext);    
        this.tdAffectedFields = new HashMap<String, Boolean>();
        this.cu = new ContentUtil();
    }
    
-   public Map<String, Object> getFieldNamesForMiningSchema() throws Exception
+   public Map<String, ModelContext> getFieldNamesForMiningSchema() throws Exception
    {
-       Map<String, Object>names = new HashMap<String, Object>();      
+       Map<String, ModelContext>names;
+       PMML pmml = PMMLGenerator.pmml;
        
-       PMML pmml = (PMML)rootScope.PMMLScope;       
-       
-            // First Data Dictionary
-           names = this.getDataFieldNames();
-            // Then local Transformation of parent model
-            if (currentScope.isSecondOrMore())
-            {
-                for (DerivedField derF : currentScope.getParent().readLocalDerivedFields())
-                      names.put(derF.getName(), this.currentScope);    
+        // First Data Dictionary
+        names = this.getDataFieldNames();
+        // Then local Transformation of parent model
+        if (currentContext.isSecondOrMore())
+        {
+                for (DerivedField derF : currentContext.getParent().readLocalDerivedFields())
+                      names.put(derF.getName(), this.currentContext);    
             }       
        return names;
    }  
   
-   public Map<String, Object> getDataFieldNames() throws Exception
+   public Map<String, ModelContext> getDataFieldNames() throws Exception
    {
-       Map<String, Object> names = new HashMap<String, Object>();
+       Map<String, ModelContext> names = new HashMap<String, ModelContext>();
        List<FieldDescriptor> fds = this.fieldUniverse.getFieldDescriptors(FieldUniverse.FieldType.DataField);
          
             for (FieldDescriptor fd : fds)
             {
-                names.put(fd.fieldName, this.currentScope.PMMLScope);         
+                names.put(fd.fieldName, this.currentContext);         
             }      
                   
          return names;
    }
    
-   public List<FieldDescriptor> getFieldDescriptorsForMiningSchema() throws Exception
-   {
-       // Data Dictionary
-       List<FieldDescriptor> fds = this.fieldUniverse.getFieldDescriptors(FieldType.DataField);
-       
-       // And local transformation of parent
-           if (currentScope.isSecondOrMore())
-           {
-               // Add local transformation of parent
-               fds.addAll(this.fieldUniverse.getFieldDescriptors(FieldType.DerivedField, currentScope.getParent()));
-           }
-         return fds;
-           
-   }
+   
    
    public List<FieldDescriptor> getFieldDescriptorsForTransformation() throws Exception
    {
        // DD or MiningSchema
        List<FieldDescriptor> fdl;
-       if (this.currentScope.isRoot())
+       if (this.currentContext.isRoot())
        {
            fdl =this.fieldUniverse.getFieldDescriptors(FieldUniverse.FieldType.DataField);
        }
        else
        {
-       if (this.currentScope.isDefineFunction())
+       if (this.currentContext.isDefineFunction())
        {
            fdl= this.fieldUniverse.getFieldDescriptors(FieldType.ParameterField);
        }
       else
        {
-            fdl= this.fieldUniverse.getFieldDescriptors(FieldUniverse.FieldType.MiningField, currentScope);
+            fdl= this.fieldUniverse.getFieldDescriptors(FieldUniverse.FieldType.MiningField, currentContext);
        }
        }
        if (fdl.size()==0)
@@ -115,10 +102,10 @@ public class Context {
    {
        // Mining fields
         List<FieldDescriptor> fds;
-        fds = this.fieldUniverse.getFieldDescriptors(FieldType.MiningField, currentScope);
-        fds.addAll(this.fieldUniverse.getFieldDescriptors(FieldType.DerivedField, currentScope));
+        fds = this.fieldUniverse.getFieldDescriptors(FieldType.MiningField, currentContext);
+        fds.addAll(this.fieldUniverse.getFieldDescriptors(FieldType.DerivedField, currentContext));
        // Dubious
-        fds.addAll(this.fieldUniverse.getFieldDescriptors(FieldType.DerivedField, this.rootScope));
+        fds.addAll(this.fieldUniverse.getFieldDescriptors(FieldType.DerivedField, this.rootContext));
        
        return fds;
             
@@ -136,31 +123,31 @@ public class Context {
       return fdsc;
           }
    
-    public Scope getRootScope()
+    public ModelContext getRootContext()
    {
-       return this.rootScope;       
+       return this.rootContext;       
    }
 
    
-   public Scope getCurrentScope()
+   public ModelContext getCurrentContext()
    {
-       return this.currentScope;       
+       return this.currentContext;       
    }
 
-   public void setCurrentScope(Scope cScope) throws Exception
+   public void setCurrentContext(ModelContext cContext) throws Exception
    {
-       if (this.currentScope != null) {
-           this.currentScope.addChild(cScope);
-           cScope.setParent(this.currentScope);
+       if (this.currentContext != null) {
+           this.currentContext.addChild(cContext);
+           cContext.setParent(this.currentContext);
        }
        
-       this.currentScope = cScope;       
+       this.currentContext= cContext;       
        this.createFieldUniverse();       
    }
    
    public void backToParent() throws Exception
    {
-       this.currentScope = this.currentScope.getParent();
+       this.currentContext = this.currentContext.getParent();
        this.createFieldUniverse();
    }
    
@@ -171,23 +158,23 @@ public class Context {
        
    }
    
-   public FieldDescriptor randomField(DATATYPE datatype, Boolean forModel, Boolean allValid,Boolean valuesCompulsory) throws Exception
+   public FieldDescriptor randomField(DATATYPE datatype, Boolean forModel, Boolean allValid, Boolean valuesCompulsory, Boolean intervalsCompulsory) throws Exception
    {
        FieldDescriptor fd = null;
        Integer tries = 0;
        while (fd==null)
        {
-           fd = internalRandomField(datatype, forModel, allValid, valuesCompulsory);
-           tries +=1;
+           fd = internalRandomField(datatype, forModel, allValid, valuesCompulsory, intervalsCompulsory);          
            if (tries>9)
            {
                throw new Exception("Unable to generate random field");
            }
+            tries +=1;
        }
        return fd;
    }
    
-   private FieldDescriptor internalRandomField(DATATYPE datatype, Boolean forModel, Boolean allValid, Boolean valuesCompulsory) throws Exception
+   private FieldDescriptor internalRandomField(DATATYPE datatype, Boolean forModel, Boolean allValid, Boolean valuesCompulsory, Boolean intervalsCompulsory) throws Exception
            
    {
       
@@ -197,7 +184,7 @@ public class Context {
        }
            else
        {
-           fds = this.getFieldDescriptorsForMiningSchema();
+           fds = this.currentContext.getFieldDescriptorsForMiningSchema();
        }
        Integer totalNumOfFields = fds.size();
        // retain matching datatype only. Needed?
@@ -205,7 +192,7 @@ public class Context {
        
        while (it.hasNext()) {             
            FieldDescriptor fd = it.next(); 
-           FieldHelper fieldhelper = new FieldHelper(fd.fieldName, fd.scope);
+           FieldHelper fieldhelper = new FieldHelper(fd.fieldName, fd.modelContext);
             if (!fieldhelper.getDataType().equals(datatype))
                 {
                     it.remove();
@@ -229,6 +216,14 @@ public class Context {
                     it.remove();
                         }     
                  }
+                if (intervalsCompulsory )
+                // remove DataFields without Values
+                {
+                    if (fieldhelper.getInterVals().size()==0) {
+                    it.remove();
+                        }     
+                 }
+                
                 }
             }
        }
@@ -238,7 +233,7 @@ public class Context {
        {
            return null;
        }
-       // System.out.println("  selected: " + String.valueOf(selected));
+       // General.witness("  selected: " + String.valueOf(selected));
        selected = this.generator.intValue(0, numFields-1);            
                      
        return fds.get(selected);
@@ -335,11 +330,16 @@ public class Context {
            return this.fieldUniverse;
        }
        
+       public List<FieldDescriptor> getFieldDescriptorsForMiningSchema() throws Exception
+       {
+           return this.currentContext.getFieldDescriptorsForMiningSchema();
+       }
+       
        public FieldDescriptor getFieldDescriptor(String fieldName, Object container, List<FieldDescriptor> fds) throws  Exception
        {
            for (FieldDescriptor fd : fds)
            {
-               if (fd.fieldName.equals(fieldName) || container.equals(fd.scope.getPMMLScope()))
+               if (fd.fieldName.equals(fieldName) || container.equals(fd.modelContext.getModel()))
                { return fd;}
            }
            throw new Exception("field not found");
@@ -361,7 +361,7 @@ public class Context {
        
       public DATATYPE getDataTypeOfMF(MiningField mf) throws Exception
       {
-          Object field = getFieldFromMF(mf);
+          Object field = currentContext.getFieldFromMF(mf);
           if (field.getClass().getSimpleName().equals("DataField"))
           {
               return ((DataField)field).getDataType();
@@ -372,69 +372,18 @@ public class Context {
 
       public OPTYPE getOpTypeOfMF(MiningField mf) throws Exception
       {
-          Object field = getFieldFromMF(mf);
+          Object field = currentContext.getFieldFromMF(mf);
           if (field.getClass().getSimpleName().equals("DataField"))
           {
               return ((DataField)field).getOptype();
           }
               return ((DerivedField)field).getOptype();
           
-      }
-      
-      public void setDataTypeOfMF(MiningField mf, DATATYPE datatype) throws Exception
-      {
-          Object field = getFieldFromMF(mf);
-          if (field.getClass().getSimpleName().equals("DataField"))
-          {
-              DataField df = (DataField)field;
-              df.setDataType(datatype);
-              return;
-          }
-              DerivedField derf = (DerivedField)field;
-              derf.setDataType(datatype);
-          
-      }
+      }     
       
       public Object getFieldFromMF(MiningField mf) throws Exception
       {
-          List<FieldDescriptor> fdl = this.getFieldDescriptorsForMiningSchema();
-          FieldDescriptor sourcefd = null;
-          for (FieldDescriptor fd : fdl)
-          {
-              if(fd.fieldName.equals(mf.getName()))
-                      {
-                          sourcefd = fd;
-                          break;
-                      }
-          }
-          
-          if (sourcefd.fieldType == FieldType.DataField)
-          {
-           List<DataField> dfl =   ((PMML)this.getRootScope().PMMLScope).getDataDictionary().getDataField();
-           for (DataField df : dfl)
-           {
-               if (df.getName().equals(sourcefd.fieldName))
-               {
-                   return df;
-               }
-           }
-          }
-          
-           if (sourcefd.fieldType == FieldType.DerivedField)
-          {
-           List<DerivedField> ltf =   this.currentScope.readLocalDerivedFields();
-           for (DerivedField df : ltf)
-           {
-               if (df.getName().equals(sourcefd.fieldName))
-               {
-                   return df;
-               }
-           }
-          }
-          
-          throw new Exception("mining field data type");
-          
+          return this.currentContext.getFieldFromMF(mf);
       }
-      
-
+ 
 }

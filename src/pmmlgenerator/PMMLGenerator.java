@@ -11,7 +11,7 @@ import java.math.BigInteger;
 import javax.xml.bind.*;
 
 import pmmlgenerator.util.*;
-import jaxb.gdsmodellica.pmmlgenerator.PMML42.*;        
+import pmmlgenerator.PMML42.*;        
 // import jaxb.gdsmodellica.pmmlgenerator.PMML43.*;
 
 /**
@@ -22,11 +22,11 @@ public class PMMLGenerator {
     
     public static PMML pmml;
     public static DDDriver dddriver;
-    public static Sentence sentence;
     public static Context context;
     public static Integer numPmmlFiles;
     public static Integer numRecords;
     public static String pmmlPath;
+    public static NameGenerator generator;
     // public static AttributeConstraintUniverse attributeConstraintUniverse;
     
     /**
@@ -42,6 +42,8 @@ public class PMMLGenerator {
         numPmmlFiles = 1;
         numRecords = 10;
         pmmlPath = "D:\\";
+        General.modelLevel = 0;
+        generator = new NameGenerator();
         
        try
         {
@@ -53,7 +55,7 @@ public class PMMLGenerator {
             }
         }
         catch (Exception e)
-            { throw new Exception("Wrong argument list");
+            { throw new Exception("Wrong argument list", e);
         }        
         
         Integer successes = 0;
@@ -64,25 +66,23 @@ public class PMMLGenerator {
             tries +=1;
             success = generate();            
             if(!success) {
-                   System.out.println("Generation failed. Retrying.");
+                    General.addToModelLevel(-1);
+                   General.witness("Generation failed. Retrying.");
             }
             else
             {
                 successes +=1;
             }
         }        
-         System.out.println("Generation completed with " + String.valueOf(successes) + " PMML files");        
+         General.witness("Generation completed with " + String.valueOf(successes) + " PMML files");        
     }
     
     private static Boolean generate() throws Exception
     {
             try
            {
-                  pmml = new PMML();
-                  sentence = new Sentence();
-                  Scope pmmlScope = new Scope("", pmml, "PMML", null);
-                  context = new Context(pmmlScope);
-                  pmmlScope.setContext(context);
+                  pmml = new PMML();                  
+                  context = new Context();                                  
                   General.attributeConstraintUniverse = (new ConstraintGenerator()).LoadAttributeConstraints();               
         
                 pmml.setVersion("4.2");
@@ -98,7 +98,6 @@ public class PMMLGenerator {
                 buildModel();
                 
         // serialize PMML
-                NameGenerator generator = new NameGenerator();
                 Integer pmmlId = 999;
                 if (numPmmlFiles > 1)
                 {
@@ -111,19 +110,20 @@ public class PMMLGenerator {
                 }
                 catch (Exception e)
                 {
-                    throw new Exception();
+                    throw new Exception("PMMLGenerator", e);
                 }
-                System.out.println("PMML file written");
+                General.witness("PMML file written");
                 // generate data
                 writer.writeData(pmml, numRecords, generator);
         
-                System.out.println("Data file written");
+                General.witness("Data file written");
       
                 return true;
            }    
            catch (Exception e)
            {
-               System.out.println(e.getMessage());
+               General.witness("*** " + e.getMessage());
+               e.printStackTrace();
                return false;
             }
     }
@@ -132,7 +132,7 @@ public class PMMLGenerator {
     {
         dddriver = new DDDriver();
         
-        dddriver.categoricalString = new IntDuple(2,20);
+        dddriver.categoricalString = new IntDuple(10, 20);
        
         
         dddriver.categoricalInteger = new IntDuple(1,10);
@@ -161,8 +161,8 @@ public class PMMLGenerator {
     public static void buildHeader()
     {
         Header header = new Header();
-        header.setCopyright(sentence.getSentence(4));
-        header.setDescription(sentence.getSentence(10));
+        header.setCopyright(generator.getSentence(4));
+        header.setDescription(generator.getSentence(10));
         
         pmml.setHeader(header);
     }
@@ -181,14 +181,14 @@ public class PMMLGenerator {
         dd.setNumberOfFields(numOfFields);
         
         pmml.setDataDictionary(dd);
-        System.out.println("Data Dictionary built");
+        General.witness("Data Dictionary built");
     }
     
     public static void buildTransformationDictionary() throws Exception
     {
         TransformationDictionaryBuilder tdb = new TransformationDictionaryBuilder(context);
         pmml.setTransformationDictionary(tdb.build());
-        System.out.println("Transformation Dictionary built");
+        General.witness("Transformation Dictionary built");
     }
     
     public static void buildModel() throws Exception
