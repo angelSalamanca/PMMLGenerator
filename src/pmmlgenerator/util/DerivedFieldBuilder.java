@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pmmlgenerator;
+package pmmlgenerator.util;
 
 import java.util.*;
 import javax.xml.parsers.*;
@@ -23,23 +23,26 @@ public class DerivedFieldBuilder {
      private NameGenerator generator;
      private Context context;
      private  Integer randomSwitch;
+     private Boolean forDefinedFun;
      
-    public DerivedFieldBuilder(DerivedField thisField, NameGenerator thisGenerator, Context thisContext)
+    public DerivedFieldBuilder(DerivedField thisField, NameGenerator thisGenerator, Context thisContext, Boolean forDefinedFunctions) 
     {
         this.field = thisField;
         this.generator = thisGenerator;
         this.context = thisContext;
+        this.forDefinedFun = forDefinedFunctions;
     }
 
     public DerivedField build() throws Exception
     {
         DATATYPE datatype = this.field.getDataType();
         Integer numFields = this.context.getFieldUniverse().numFields();
-       
+        try
+        {
         switch(datatype)
         {
             case STRING:
-                randomSwitch = generator.intValue(1, 3);
+                randomSwitch = generator.intValue(1, 4);
                  switch(randomSwitch)
                  {
                     case 1:
@@ -48,7 +51,17 @@ public class DerivedFieldBuilder {
                         return fieldRefField(datatype);
                     case 3:
                         return mapValuesField();
-                 }
+                    case 4:           
+                        if (this.forDefinedFun)
+                        {
+                              return fieldRefField(datatype);  
+                        }
+                        else
+                        {
+                              return discretizeField();  // Impossible for parameters - no values!
+                        }
+                
+                }
             case FLOAT:
             case DOUBLE:
             case INTEGER:
@@ -69,6 +82,8 @@ public class DerivedFieldBuilder {
                     return constantField(datatype); // INTEGER not allowed for this
                 }
             case 4:
+            case 5:
+    
             if ((this.field.getDataType()==DATATYPE.DOUBLE || this.field.getDataType() == DATATYPE.FLOAT) && numFields>30)
                 {
                     return normDiscreteField();
@@ -77,17 +92,7 @@ public class DerivedFieldBuilder {
                 {
                     return constantField(datatype);
                 }
-            case 5:
-
-
-                 if (this.field.getDataType()==DATATYPE.STRING)
-                {
-                    return discretizeField();
-                }
-                else
-                {
-                    return fieldRefField(datatype); // STRING, INTEGER not allowed for this
-                }
+            
 
             case 6:
             case 7:
@@ -101,7 +106,12 @@ public class DerivedFieldBuilder {
              default:
                 throw new Exception("Unexpected case");
            }
-         
+        }
+        catch (Exception e)
+        {
+            General.witness("*** DerivedFieldBuilder. RandomSwitch = " + String.valueOf(randomSwitch) + " " + datatype.name() +" " + e.getMessage());
+            throw new Exception("DerivedFieldBuilder", e);
+        }
         
 
     }
@@ -122,7 +132,7 @@ public class DerivedFieldBuilder {
         FieldRef fieldref = new FieldRef();
         this.field.setFieldRef(fieldref);
 
-        FieldDescriptor fd = this.context.randomField(datatype, true, false,false);
+        FieldDescriptor fd = this.context.randomField(datatype, true, false,false, false);
         fieldref.setField(fd.fieldName);
         this.context.affectField(fd.fieldName);
 
@@ -134,7 +144,7 @@ public class DerivedFieldBuilder {
         NormContinuous normc = new NormContinuous();
         this.field.setNormContinuous(normc);
 
-        FieldDescriptor fd = this.context.randomField(this.field.getDataType(), true, false, false);
+        FieldDescriptor fd = this.context.randomField(this.field.getDataType(), true, false, false, false);
         normc.setField(fd.fieldName);
         this.context.affectField(fd.fieldName);
 
@@ -160,20 +170,20 @@ public class DerivedFieldBuilder {
 
         // pick a String variable to convert to dummy 1/0 var. Could be any categorical but...
         // we also retain datafields only to get easy access to values
-        FieldDescriptor fd = this.context.randomField(DATATYPE.STRING, false, false, true);
+        FieldDescriptor fd = this.context.randomField(DATATYPE.STRING, true, false, true, false);
         String fieldName = fd.fieldName;
         this.context.affectField(fd.fieldName);
         
-        FieldHelper fieldhelper = new FieldHelper(fieldName, fd.scope);
+        FieldHelper fieldhelper = new FieldHelper(fieldName, fd.modelContext);
 
         normd.setField(fieldName);
         normd.setMethod("indicator");
-        Integer randomcat = this.generator.intValue(0, fieldhelper.getValues().size()-1);
-        
         List<Value> values = fieldhelper.getValues();
+      
         String value;
         if (values.size()>0)
         {
+             Integer randomcat = this.generator.intValue(0, values.size()-1);
              value = fieldhelper.getValues().get(randomcat).getValue();
         }
         else
@@ -188,7 +198,7 @@ public class DerivedFieldBuilder {
      private DerivedField discretizeField() throws Exception
      {
         Discretize discretize = new Discretize();
-        FieldDescriptor fd = this.context.randomField(DATATYPE.DOUBLE, false, true,false); // TODO Other CONTINUOUS
+        FieldDescriptor fd = this.context.randomField(DATATYPE.DOUBLE, true, false, false, true); // TODO Other CONTINUOUS
         String fieldName = fd.fieldName;
  
         discretize.setField(fieldName);
@@ -197,7 +207,7 @@ public class DerivedFieldBuilder {
         discretize.setMapMissingTo(this.generator.stringValue(2));
         this.field.setDiscretize(discretize);
 
-        FieldHelper fh = new FieldHelper(fieldName, fd.scope);
+        FieldHelper fh = new FieldHelper(fieldName, fd.modelContext);
 
         List<Double> intervals = fh.getIntervals(this.generator.intValue(3, 6));
 
@@ -246,7 +256,7 @@ public class DerivedFieldBuilder {
            derF.setDataType(this.field.getDataType());
            derF.setOptype(this.field.getOptype());
 
-           DerivedFieldBuilder dfb = new DerivedFieldBuilder(derF, this.generator, this.context);
+           DerivedFieldBuilder dfb = new DerivedFieldBuilder(derF, this.generator, this.context, this.forDefinedFun);
            derF = dfb.build();
            // TODO get expression
            Object innerExpression = getExpression(derF);
@@ -266,7 +276,7 @@ public class DerivedFieldBuilder {
         String outputColumnName = "outputcol_" + generator.stringValue(3);
         mapvalues.setOutputColumn(outputColumnName);
         
-        FieldDescriptor fd = this.context.randomField(DATATYPE.STRING, true, false, false);
+        FieldDescriptor fd = this.context.randomField(DATATYPE.STRING, true, false, false, false);
         FieldColumnPair fcpair = new FieldColumnPair();
         fcpair.setField(fd.fieldName);
         this.context.affectField(fd.fieldName);
