@@ -46,27 +46,19 @@ public class MiningSchemaBuilder {
             
             for (FieldDescriptor fd : fieldCatalog)
            {
-               if (fd == this.targetDescriptor )  // skip target
+               if (fd.fieldName.equals(this.targetDescriptor.fieldName))  // skip target
                {
                    continue;
                }
                 // random pick                
                 double d = this.generator.doubleValue();
-                if (d<0.75 || this.context.isTDAffected(fd.fieldName) )  // to force a target 
+                if (d<0.75 || this.context.getCurrentContext().isDerivedAffectedAnywhere(fd.fieldName) )  // to force a target 
                 {
                     MiningField mField = new MiningField();
                     String fieldName = fd.fieldName;
                     mField.setName(fieldName);
-                    Object ancestor = fd.modelContext.getFieldFromMF(mField);
-                    if (ancestor instanceof DataField)
-                    {
-                        DataField df = (DataField)ancestor;
-                        this.fieldDescriptor = this.modelContext.context.fieldUniverse.get("PMML." + df.getName());  // . for root Scope                        
-                    }
-                    else {  //DerivedField
-                        DerivedField derf = (DerivedField)ancestor;
-                        this.fieldDescriptor = this.modelContext.context.fieldUniverse.get("PMML." + derf.getName());  // . for root Scope                        
-                    }                    
+                    this.fieldDescriptor =this.modelContext.getFDFromMF(mField);
+                               
                   //  this.context.setDataTypeOfMF(mField, this.fieldHelper.getDataType());
                     // UsageType
                    
@@ -104,8 +96,8 @@ public class MiningSchemaBuilder {
             if (this.modelContext.context.getCurrentContext().isSecondOrMore()) // ??
             {
                 // From parent
-                ModelContext parentContext = this.modelContext.context.getCurrentContext().getParent();
-                // TODO
+                ModelContext parentContext = this.modelContext.getParent();
+                this.targetDescriptor =  parentContext.targetFieldDescriptor;                
             }
             else  // random compatible field
             {

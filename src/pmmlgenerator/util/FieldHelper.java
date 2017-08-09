@@ -83,6 +83,13 @@ public class FieldHelper {
                isModel = true;
                addTransfDict = true;
                break; 
+           case "RegressionModel":
+               RegressionModel rm = (RegressionModel)container;
+               content = cu.getFromContent(rm.getContent(), "MiningSchema");
+               lt = (LocalTransformations)cu.getFromContent(rm.getContent(),"LocalTransformations");
+               isModel = true;
+               addTransfDict = true;
+               break;     
           case "MiningModel":
                MiningModel miningModel = (MiningModel)container;
                content = cu.getFromContent(miningModel.getContent(), "MiningSchema");
@@ -144,7 +151,7 @@ public class FieldHelper {
         }
        
         this.castField();
-        this.generator = new NameGenerator();
+        this.generator = this.context.generator;
     }
        
     public String getTheClass()
@@ -182,11 +189,27 @@ public class FieldHelper {
             case "DataField":
                 return dField.getOptype();
             case "MiningField":
-                return mField.getOptype();
+                OPTYPE optype = mField.getOptype();
+                if (optype == null)
+                {
+                    Object ancestor = this.context.getFieldFromMF(this.mField);
+                    if (ancestor instanceof DataField)
+                    {
+                        optype = ((DataField)ancestor).getOptype();
+                    }
+                    else
+                    {
+                        optype = ((DerivedField)ancestor).getOptype();
+                    }                                      
+                }
+                return optype;     
+                
             case "DerivedField":
                 return derField.getOptype();
+                
             case "ParameterField":
                 return pField.getOptype();
+                
             default:
                 throw new Exception("Unexpected class");
         }

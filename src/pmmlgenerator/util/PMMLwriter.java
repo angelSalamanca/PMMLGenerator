@@ -22,18 +22,21 @@ public class PMMLwriter {
     
     private String pmmlPath;
     private String id;
+    private String modelStem;
     
-    public PMMLwriter(String thispath, String thisid)
+    public PMMLwriter(String thispath, String thisid, String thismodelStem)
     {
         this.pmmlPath = thispath;
         this.id = thisid;
+        this.modelStem = thismodelStem;
     }
     
     public void write(PMML pmml) throws Exception
     {
         
          try {
-        File file = new File(pmmlPath + "generated." + id + ".pmml");
+       
+         File file = new File(this.pmmlPath + "generated." + this.modelStem + "." + id + ".pmml");
         JAXBContext jaxbContext = JAXBContext.newInstance(PMML.class);
         Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
         // Add namespaces
@@ -50,20 +53,24 @@ public class PMMLwriter {
          }
     }
     
-    public void writeData(PMML pmml, Integer numRecords, NameGenerator generator) throws Exception
+    public void writeData(PMML pmml, Integer numRecords, Context context) throws Exception
     {
-        DataField df0;
-        
+        NameGenerator generator = context.generator;
+      
          try {
-             File dataFile = new File(pmmlPath + "generated." + id + ".data.txt");
+             File dataFile = new File(pmmlPath + "generated." + this.modelStem + "." + id + ".data.txt");
              Writer writer = new BufferedWriter(new FileWriter(dataFile));
              List<DataField> fields = pmml.getDataDictionary().getDataField();
              
 // write Header
              for (DataField df : fields)
              {
-                 writer.write(df.getName());
-                 writer.write("\t");
+                 // Target is not input
+                 if (df.getName() != context.getMaingTargetField().getName())
+                 {
+                     writer.write(df.getName());
+                     writer.write("\t");
+                 }
              }
              writer.write("\n");
 
@@ -72,9 +79,11 @@ public class PMMLwriter {
              {
                     for (DataField df : fields)
                     {
-                        df0 = df;
-                        writer.write(generator.getValue(df));
-                        writer.write("\t");
+                        if (df.getName() != context.getMaingTargetField().getName()) 
+                        {
+                            writer.write(generator.getValue(df));
+                            writer.write("\t");
+                        }
                      }
              writer.write("\n");
              }

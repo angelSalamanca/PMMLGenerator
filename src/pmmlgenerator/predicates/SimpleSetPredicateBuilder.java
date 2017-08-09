@@ -19,9 +19,9 @@ public class SimpleSetPredicateBuilder extends PredicateBuilder{
      {
          SimpleSetPredicate predicate = new SimpleSetPredicate();
        
-          List<FieldDescriptor> fds = modelContext.context.getFieldDescriptorsForModel(); // all kind of fields: MS, TD and LT
-          modelContext.context.keepContinuousFDS(fds);
-          FieldDescriptor fd = fds.get(modelContext.generator.intValue(0, fds.size()-1));
+          DATATYPE fddatatype = modelContext.generator.pickDataType();
+          
+          FieldDescriptor fd = modelContext.context.randomField(fddatatype, true, false, false, false); // 
           FieldHelper fh = new FieldHelper(fd.fieldName, fd.modelContext);
 
           predicate.setArray(modelContext.generator.getArray(fd));

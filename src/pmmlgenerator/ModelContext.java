@@ -19,10 +19,11 @@ public class ModelContext {
     
     Object PMMLModel;
     private ModelContext parent;
-    List<ModelContext> children;
+    private List<ModelContext> children;
     
     public GeneralRegressionModel grm;
-    public  TreeModel treeModel;
+    public RegressionModel rm;
+    public TreeModel treeModel;
     public MiningModel miningModel;
     
     private MiningField targetField;
@@ -35,6 +36,7 @@ public class ModelContext {
     public  FieldDescriptor targetFieldDescriptor;
     private List<FieldDescriptor> fds;
     private String name;
+    private Map<String, Boolean> tdAffectedFields;
 
     
     public  MiningField getTargetField()
@@ -57,6 +59,11 @@ public class ModelContext {
         return this.categories.size();
     }
     
+    public List<ModelContext> getChildren()
+    {
+        return this.children;
+    }
+    
     public ModelContext(Context thiscontext, String modelFamily) throws Exception
     {
         this.context = thiscontext; 
@@ -71,6 +78,8 @@ public class ModelContext {
        
         this.theClass = modelFamily;
         this.cu = new ContentUtil();
+        this.tdAffectedFields = new HashMap<String, Boolean>();
+          
         General.witness("Setting up " + modelFamily);
     }
     
@@ -83,6 +92,7 @@ public class ModelContext {
         this.cu = new ContentUtil();
         this.name = mcName; // Will be updated when we know model name
         this.PMMLModel = model;
+         this.tdAffectedFields = new HashMap<String, Boolean>();
     }
     
      public Boolean isSecondOrMore()
@@ -151,6 +161,8 @@ public class ModelContext {
                 return this.grm ;
             case "TreeModel":
                 return this.treeModel;
+            case "RegressionModel":
+                return this.rm ;
             case "MiningModel":
                 return this.miningModel;
             case "DefineFunction":
@@ -179,6 +191,10 @@ public class ModelContext {
             case "TreeModel":
                 this.treeModel = (TreeModel)PMMLModel;
                 break;
+                
+           case "RegressionModel":
+                this.rm = (RegressionModel)PMMLModel;
+                break;                     
                 
             case "MiningModel":
                 this.miningModel = (MiningModel)PMMLModel;
@@ -220,6 +236,12 @@ public class ModelContext {
                 lt = (LocalTransformations)cu.getFromContent(treemodel.getContent(),"LocalTransformations");
                 break;
                 
+             case "MiningModel":
+                MiningModel mm = (MiningModel)model;
+                lt = (LocalTransformations)cu.getFromContent(mm.getContent(),"LocalTransformations");
+                break;    
+                
+                
              case "RegressionModel":
                 RegressionModel rm = (RegressionModel)model;
                 lt = (LocalTransformations)cu.getFromContent(rm.getContent(),"LocalTransformations");
@@ -241,12 +263,14 @@ public class ModelContext {
     
     public Boolean hasPredictedValue() throws Exception
     {
-        String theClass = this.PMMLModel.getClass().getSimpleName();
+ 
         switch(theClass)
         {
             case "GeneralRegressionModel":
             case "TreeModel":
             case "MiningModel":    
+            case "RegressionModel":    
+                
                 return true;
             default:
                 throw new Exception("Unexpected class");
@@ -255,10 +279,10 @@ public class ModelContext {
     
       public Boolean hasprobability() throws Exception
     {
-        String theClass = this.PMMLModel.getClass().getSimpleName();
+     
         switch(theClass)
         {
-            case "GeneralRegressionModel":            
+            case "GeneralRegressionModel":
                 if (grm.getFunctionName().equals(MININGFUNCTION.CLASSIFICATION))
                 {
                     return true;
@@ -277,6 +301,17 @@ public class ModelContext {
                 {
                     return false;
                 }
+           
+             case "RegressionModel":
+                if (rm.getFunctionName().equals(MININGFUNCTION.CLASSIFICATION))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+           
             
             case "MiningModel":
                 return false;  //TODO in modelChain look at last model characteristics
@@ -298,7 +333,7 @@ public class ModelContext {
       
       public Boolean isRegression() throws Exception
       {
-           String theClass = this.PMMLModel.getClass().getSimpleName();
+         
            switch(theClass)
         {
                case "GeneralRegressionModel":
@@ -309,6 +344,9 @@ public class ModelContext {
                    
                case "MiningModel":
                      return miningModel.getFunctionName() == MININGFUNCTION.REGRESSION;
+                   
+                 case "RegressionModel":
+                   return rm.getFunctionName() == MININGFUNCTION.REGRESSION;    
                    
                 default:
                     throw new Exception("Unexpected class");     
@@ -327,6 +365,13 @@ public class ModelContext {
           TreeModelBuilder tmb = new TreeModelBuilder(this);
           tmb.build(isRegression);
       }
+      
+       private void buildRM(Boolean isRegression) throws Exception
+      {
+          RMBuilder rmb = new RMBuilder(this);
+          rmb.build(isRegression);
+      }
+      
       
        private void buildMiningModel(Boolean isRegression) throws Exception
       {
@@ -358,6 +403,10 @@ public class ModelContext {
                 this.buildTreeModel(isRegression);
                 break;
                 
+           case "RegressionModel":
+                this.buildRM(isRegression);
+                break;
+                
             case "MiningModel":
                 this.buildMiningModel(isRegression);
                 break;
@@ -379,6 +428,8 @@ public class ModelContext {
             case "TreeModel":
                 return (MiningSchema)this.cu.getFromContent(this.treeModel.getContent(), "MiningSchema");
                 
+            case "RegressionModel":
+                return (MiningSchema)this.cu.getFromContent(this.rm.getContent(), "MiningSchema");
                 
             case "MiningModel":
                 return (MiningSchema)this.cu.getFromContent(this.miningModel.getContent(), "MiningSchema");
@@ -408,18 +459,26 @@ public class ModelContext {
            
    }
        
-       public Object getFieldFromMF(MiningField mf) throws Exception
-      {
+       public FieldDescriptor getFDFromMF(MiningField mf) throws Exception
+       {
           List<FieldDescriptor> fdl = this.getFieldDescriptorsForMiningSchema();
           FieldDescriptor sourcefd = null;
           for (FieldDescriptor fd : fdl)
           {
               if(fd.fieldName.equals(mf.getName()))
                       {
-                          sourcefd = fd;
-                          break;
+                          return fd;                          
                       }
           }
+          return null;
+       }
+       
+       
+       public Object getFieldFromMF(MiningField mf) throws Exception
+      {
+          try {
+          
+         FieldDescriptor sourcefd = this.getFDFromMF(mf);
           
           if (sourcefd.fieldType == FieldUniverse.FieldType.DataField)
           {
@@ -435,7 +494,7 @@ public class ModelContext {
           
            if (sourcefd.fieldType == FieldUniverse.FieldType.DerivedField)
           {
-           List<DerivedField> ltf =   this.readLocalDerivedFields();
+           List<DerivedField> ltf =   sourcefd.modelContext.readLocalDerivedFields();
            for (DerivedField df : ltf)
            {
                if (df.getName().equals(sourcefd.fieldName))
@@ -461,11 +520,45 @@ public class ModelContext {
                      }
                 }
             }
-            
-          throw new Exception("mining field data type");
+               throw new Exception("mining field data type");
+          }
+          
+         catch (Exception e) {   
+             {
+                 General.witness(e.getMessage());
+                 throw new Exception("FromMF",e);
+             } 
+       
           
       }
+      }
        
+         public void affectField(String name)
+       {
+           if (!this.tdAffectedFields.containsKey(name))
+           {
+               this.tdAffectedFields.put(name, Boolean.TRUE);
+           }
+       }
+       
+       public Boolean isDerivedAffected(String name)
+       {
+           return this.tdAffectedFields.containsKey(name);
+       }
+       
+       public Boolean isDerivedAffectedAnywhere(String name)
+       {
+           ModelContext modelContext = this;
+           while (modelContext!=null)
+           {
+               if (modelContext.isDerivedAffected(name))
+               {
+                   return true;
+               }
+               modelContext = modelContext.getParent();
+           }
+           return false;
+       }
            
     public List<MiningField> readMiningFields() throws Exception
     {
@@ -493,5 +586,32 @@ public class ModelContext {
          }
                 return lt;
     }
+     
+     public String getTheClass()
+     {
+         return this.theClass;
+     }
+     
+     public String getModelStem()
+     {
+           switch (this.children.get(this.children.size()-1).getTheClass())
+         {
+             case "GeneralRegressionModel":
+               return "grm";
+              
+             case "TreeModel":
+                return "tree";
+                 
+             case "RegressionModel":
+               return "rm";
+                              
+              case "MiningModel":
+                return "mm";
+              
+             default:
+               return "unknown";
+         }
+                
+     }
  
 }

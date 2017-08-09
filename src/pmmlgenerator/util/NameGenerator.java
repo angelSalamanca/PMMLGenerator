@@ -25,7 +25,9 @@ public class NameGenerator {
     public NameGenerator()
     {
         randomGenerator = new Random();
-        this.randomGenerator.setSeed(98766789);
+       
+       // randomGenerator.setSeed(General.seed);
+      
         this.fieldNums = new HashMap<String,Integer>();
         this.fieldNums.put("String",1);
         this.fieldNums.put("Integer",1);
@@ -133,14 +135,13 @@ public class NameGenerator {
     
     public ArrayList<Integer> intValues(int numValues)
     {
-        ArrayList<Integer> values = new ArrayList<Integer>();
-        
+        ArrayList<Integer> values = new ArrayList<Integer>();        
+        Integer generated = -60;
         
         while (values.size()<numValues)
         {
-            Integer generated = randomGenerator.nextInt(100);
-            if (!values.contains(generated));
-                {values.add(generated);}
+            generated += 3*(1+randomGenerator.nextInt(25));
+            values.add(generated);
         }
         Collections.sort(values);
         
@@ -276,11 +277,25 @@ public class NameGenerator {
       public String getValue(DataField df) throws Exception
       {
             DATATYPE datatype = df.getDataType();
+             List<Value> v =  df.getValue();
+             if (this.doubleValue()<0.95)  // most of the time 
+             {
+                 // remove missing code as a potential value
+                 for (Value value : v)
+                 {
+                     if (value.getProperty().equals("missing"))
+                     {
+                         v.remove(value);
+                         break;
+                     }
+                 }
+             }
+              
             switch(datatype)
             {
                 case STRING:
                     // Try values
-                    List<Value> v =  df.getValue();
+                  
                     if (v.size()>0)
                     {
                         return v.get(this.intValue(0, v.size()-1)).getValue();
@@ -322,7 +337,6 @@ public class NameGenerator {
                         }
                     }
                     // Try values
-                     v =  df.getValue();
                     if (v.size()>0)
                     {
                         return v.get(this.intValue(0, v.size()-1)).getValue();
@@ -343,7 +357,6 @@ public class NameGenerator {
                         return String.valueOf(dValue);
                     }
                     // Try values
-                     v =  df.getValue();
                     if (v.size()>0)
                     {
                         return v.get(this.intValue(0, v.size()-1)).getValue();
@@ -374,9 +387,8 @@ public class NameGenerator {
         }
         
         public DATATYPE pickDataType() throws Exception
-        {
-            Integer i = this.intValue(0, DATATYPE.values().length);
-            return DATATYPE.values()[i];
+        {            
+            return DATATYPE.valueOf(this.pickOne(General.dfDataTypes));
         }
         
         public ArrayType getArray(FieldDescriptor fd) throws Exception

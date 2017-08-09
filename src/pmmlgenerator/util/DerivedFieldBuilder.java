@@ -134,7 +134,7 @@ public class DerivedFieldBuilder {
 
         FieldDescriptor fd = this.context.randomField(datatype, true, false,false, false);
         fieldref.setField(fd.fieldName);
-        this.context.affectField(fd.fieldName);
+        this.context.getCurrentContext().affectField(fd.fieldName);
 
         return this.field;
     }
@@ -146,7 +146,7 @@ public class DerivedFieldBuilder {
 
         FieldDescriptor fd = this.context.randomField(this.field.getDataType(), true, false, false, false);
         normc.setField(fd.fieldName);
-        this.context.affectField(fd.fieldName);
+        this.context.getCurrentContext().affectField(fd.fieldName);
 
         // get an ordered list of doubles, as in intervals.
          ArrayList<Double> dValues = this.generator.doubleValues(this.generator.intValue(2, 7));
@@ -172,7 +172,7 @@ public class DerivedFieldBuilder {
         // we also retain datafields only to get easy access to values
         FieldDescriptor fd = this.context.randomField(DATATYPE.STRING, true, false, true, false);
         String fieldName = fd.fieldName;
-        this.context.affectField(fd.fieldName);
+        this.context.getCurrentContext().affectField(fd.fieldName);
         
         FieldHelper fieldhelper = new FieldHelper(fieldName, fd.modelContext);
 
@@ -202,7 +202,7 @@ public class DerivedFieldBuilder {
         String fieldName = fd.fieldName;
  
         discretize.setField(fieldName);
-        this.context.affectField(fd.fieldName);
+        this.context.getCurrentContext().affectField(fd.fieldName);
         discretize.setDefaultValue(this.generator.stringValue(2));
         discretize.setMapMissingTo(this.generator.stringValue(2));
         this.field.setDiscretize(discretize);
@@ -243,7 +243,13 @@ public class DerivedFieldBuilder {
      {
         Apply apply = new Apply();
         this.field.setApply(apply);
+        
+        // we do this to identify apply blocks when debugging
+        Extension extension = new Extension();
+        extension.setName("Apply Extension " + this.generator.stringValue(3));
+        apply.getExtension().add(extension);
 
+        
         BuiltinFunction function = this.context.getRandomFunction(this.field.getDataType());
 
         apply.setFunction(function.getName());
@@ -258,7 +264,7 @@ public class DerivedFieldBuilder {
 
            DerivedFieldBuilder dfb = new DerivedFieldBuilder(derF, this.generator, this.context, this.forDefinedFun);
            derF = dfb.build();
-           // TODO get expression
+          
            Object innerExpression = getExpression(derF);
            apply.getEXPRESSION().add(innerExpression);
         }
@@ -279,7 +285,7 @@ public class DerivedFieldBuilder {
         FieldDescriptor fd = this.context.randomField(DATATYPE.STRING, true, false, false, false);
         FieldColumnPair fcpair = new FieldColumnPair();
         fcpair.setField(fd.fieldName);
-        this.context.affectField(fd.fieldName);
+        this.context.getCurrentContext().affectField(fd.fieldName);
 
         fcpair.setColumn(inputColumnName);
         mapvalues.getFieldColumnPair().add(fcpair);

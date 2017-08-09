@@ -43,9 +43,9 @@ public class NodeBuilder {
         }
         else // classification
         {
-           List<Object> sds = this.buildScoreDistribution(numObservations);
+           List<ScoreDistribution> sds = this.buildScoreDistribution(numObservations);
            node.setScore(this.getWinnerCat(sds));
-           contentUtil.setContent(node.getContent(), (List<Object>)sds);
+           node.setScoreDistributions(sds);           
            node.setRecordCount(numObservations.doubleValue());
         }
         nl.add(node);
@@ -58,7 +58,7 @@ public class NodeBuilder {
         {
             TruePredicateBuilder tpb = new TruePredicateBuilder();
             True tp = (True)tpb.build(this.modelContext);
-            node.getContent().add(tp);            
+            node.setPredicate(tp);            
         }
         else
         {
@@ -70,23 +70,23 @@ public class NodeBuilder {
                     }
                      else
                      {
-                         List<Object> sds = this.buildScoreDistribution(numObservations);
+                        List<ScoreDistribution> sds = this.buildScoreDistribution(numObservations);
                         node2.setScore(getWinnerCat(sds));
-                        contentUtil.setContent(node2.getContent(), (List<Object>)sds);           
+                        node2.setScoreDistributions(sds);                        
                      }
                     nl.add(node2);
                     
             switch(this.modelContext.generator.intValue(1, 3))
             {
-                case 1: // Impossible
+                case 1: 
                     // Compound predicate
                     CompoundPredicateBuilder cpb = new CompoundPredicateBuilder(0);
                     CompoundPredicate cp = (CompoundPredicate)cpb.build(this.modelContext);
-                    node.getContent().add(cp);
+                    node.setPredicate(cp);
                     
                      cpb = new CompoundPredicateBuilder(0);
                      cp = (CompoundPredicate)cpb.build(this.modelContext);
-                     node2.getContent().add(cp);
+                     node2.setPredicate(cp);
                     
                     break;
  
@@ -94,10 +94,10 @@ public class NodeBuilder {
                 case 3:
                     SimplePredicateBuilder spb = new SimplePredicateBuilder();
                     SimplePredicate sp = (SimplePredicate)spb.build(this.modelContext);
-                    node.getContent().add(sp);
+                    node.setPredicate(sp);
                     
                     SimplePredicate sp2 = (SimplePredicate)spb.complementaryPredicate();                    
-                    node2.getContent().add(sp2);
+                    node2.setPredicate(sp2);
                     break;
                 default:
                     throw new Exception();
@@ -113,7 +113,7 @@ public class NodeBuilder {
             List<Node> nl2 = build(node, numObsChild);
             for (Node node3 : nl2)
             {
-                node.getContent().add(node3);
+                node.getNodes().add(node3);
             }
         }        
 
@@ -124,7 +124,7 @@ public class NodeBuilder {
             List<Node> nl3 = build(node2, numObservations - numObsChild);
             for (Node node3 : nl3)
             {
-                node2.getContent().add(node3);
+                node2.getNodes().add(node3);
             }
         }
          }
@@ -143,9 +143,9 @@ public class NodeBuilder {
         return nl;      
     }
     
-    private List<Object> buildScoreDistribution(Integer numObservations) throws Exception
+    private List<ScoreDistribution> buildScoreDistribution(Integer numObservations) throws Exception
     {
-        List<Object> sds = new ArrayList<Object>();   
+        List<ScoreDistribution> sds = new ArrayList<ScoreDistribution>();   
         
         List<Integer> cutoffs = this.modelContext.generator.intCutoffs(numObservations, this.modelContext.numTargetCategories());
                for (Integer i =0 ; i<cutoffs.size(); i++)
@@ -158,14 +158,14 @@ public class NodeBuilder {
                return sds; 
     }
     
-    private String getWinnerCat(List<Object>sds)
+    private String getWinnerCat(List<ScoreDistribution>sds)
     {
         String winner = null;
         Double maxCount = -1.0;
         
         for (int i=0; i<sds.size(); i++)
         {
-            ScoreDistribution sd = (ScoreDistribution)sds.get(i);
+            ScoreDistribution sd = sds.get(i);
             Double recordCount =  sd.getRecordCount();
             if (recordCount > maxCount)
             {

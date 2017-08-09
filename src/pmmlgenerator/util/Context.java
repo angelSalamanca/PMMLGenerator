@@ -23,7 +23,6 @@ public class Context {
    private List<BuiltinFunction> safeFunctions;
    private List<BuiltinFunction> stringBuiltInFunctions;
    public FieldUniverse fieldUniverse;
-   private Map<String, Boolean> tdAffectedFields;
    private Integer selected;
    private ContentUtil cu;
    private List<FieldDescriptor> fds;
@@ -36,9 +35,15 @@ public class Context {
        this.safeFunctions = new ArrayList<BuiltinFunction>();
        this.stringBuiltInFunctions = populateStringBuiltinFunctions();
        this.rootContext = new ModelContext(this, "PMML");
-       this.setCurrentContext(this.rootContext);    
-       this.tdAffectedFields = new HashMap<String, Boolean>();
+       this.setCurrentContext(this.rootContext);         
        this.cu = new ContentUtil();
+   }
+   
+   public MiningField getMaingTargetField()
+   {
+       List<ModelContext> childrenGen1 = this.rootContext.getChildren();
+       ModelContext mainContext = childrenGen1.get(childrenGen1.size()-1);
+       return mainContext.getTargetField();
    }
    
    public Map<String, ModelContext> getFieldNamesForMiningSchema() throws Exception
@@ -68,9 +73,7 @@ public class Context {
             }      
                   
          return names;
-   }
-   
-   
+   }  
    
    public List<FieldDescriptor> getFieldDescriptorsForTransformation() throws Exception
    {
@@ -86,16 +89,28 @@ public class Context {
        {
            fdl= this.fieldUniverse.getFieldDescriptors(FieldType.ParameterField);
        }
-      else
+       else  // model
        {
             fdl= this.fieldUniverse.getFieldDescriptors(FieldUniverse.FieldType.MiningField, currentContext);
-       }
-       }
-       if (fdl.size()==0)
-       {
-           int a =1+1;
-       }
-       return fdl;
+            // Remove target if present
+              Iterator<FieldDescriptor> it = fdl.iterator();            
+              while (it.hasNext()) {             
+                       FieldDescriptor fd = it.next(); 
+                       if (fd.field instanceof MiningField)
+                       {
+                           MiningField mf = (MiningField)fd.field;
+                           if (mf.getUsageType().equals(FIELDUSAGETYPE.TARGET))
+                           {
+                               it.remove();
+                               break;
+                           }
+                       } // if
+              } // while
+       } // else
+       } // else
+                        
+       if (fdl.size()==0)   { throw new Exception("No field descriptors"); }
+            return fdl;
    }
    
   public List<FieldDescriptor> getFieldDescriptorsForModel() throws Exception
@@ -121,8 +136,26 @@ public class Context {
           { fdsc.add(fd);}
       }
       return fdsc;
-          }
-   
+    }  
+  
+  public List<FieldDescriptor> removeTarget(List<FieldDescriptor> fdl)
+  {
+        Iterator<FieldDescriptor> it = fdl.iterator();            
+              while (it.hasNext()) {             
+                       FieldDescriptor fd = it.next(); 
+                       if (fd.field instanceof MiningField)
+                       {
+                           MiningField mf = (MiningField)fd.field;
+                           if (mf.getUsageType().equals(FIELDUSAGETYPE.TARGET))
+                           {
+                               it.remove();
+                               break;
+                           }
+                       } // if
+              } // while
+         return fdl;
+  }
+  
     public ModelContext getRootContext()
    {
        return this.rootContext;       
@@ -188,7 +221,7 @@ public class Context {
        }
        Integer totalNumOfFields = fds.size();
        // retain matching datatype only. Needed?
-       Iterator<FieldDescriptor> it = fds.iterator();
+       Iterator<FieldDescriptor> it = fds.iterator();            
        
        while (it.hasNext()) {             
            FieldDescriptor fd = it.next(); 
@@ -267,7 +300,7 @@ public class Context {
        f.setArgumentTypes(new String[]{"c","c"});
        functions.add(f);
        
-       // TODO Implement max min sqrt
+       // TODO Implement max min
               
        return functions;
    }
@@ -346,18 +379,7 @@ public class Context {
            
        }
        
-       public void affectField(String name)
-       {
-           if (!this.tdAffectedFields.containsKey(name))
-           {
-               this.tdAffectedFields.put(name, Boolean.TRUE);
-           }
-       }
-       
-       public Boolean isTDAffected(String name)
-       {
-           return this.tdAffectedFields.containsKey(name);
-       }
+     
        
       public DATATYPE getDataTypeOfMF(MiningField mf) throws Exception
       {

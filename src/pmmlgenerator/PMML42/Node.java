@@ -13,8 +13,10 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
+import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -51,36 +53,39 @@ import javax.xml.bind.annotation.XmlType;
  * 
  * 
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "content"
-})
-@XmlRootElement(name = "Node")
-public class Node {
+@XmlAccessorType(value = XmlAccessType.FIELD)
+@XmlType(name = "", propOrder = {"extensions", "predicate", "partition", "scoreDistributions", "nodes", "embeddedModel"})
+@XmlRootElement(name = "Node", namespace = "http://www.dmg.org/PMML-4_2")
+public class Node  {
 
-    @XmlElementRefs({
-        @XmlElementRef(name = "SimplePredicate", namespace = "http://www.dmg.org/PMML-4_2", type = SimplePredicate.class, required = false),
-        @XmlElementRef(name = "True", namespace = "http://www.dmg.org/PMML-4_2", type = True.class, required = false),
-        @XmlElementRef(name = "DecisionTree", namespace = "http://www.dmg.org/PMML-4_2", type = DecisionTree.class, required = false),
-        @XmlElementRef(name = "Partition", namespace = "http://www.dmg.org/PMML-4_2", type = Partition.class, required = false),
-        @XmlElementRef(name = "ScoreDistribution", namespace = "http://www.dmg.org/PMML-4_2", type = ScoreDistribution.class, required = false),
-        @XmlElementRef(name = "Extension", namespace = "http://www.dmg.org/PMML-4_2", type = Extension.class, required = false),
-        @XmlElementRef(name = "CompoundPredicate", namespace = "http://www.dmg.org/PMML-4_2", type = CompoundPredicate.class, required = false),
-        @XmlElementRef(name = "False", namespace = "http://www.dmg.org/PMML-4_2", type = False.class, required = false),
-        @XmlElementRef(name = "Node", namespace = "http://www.dmg.org/PMML-4_2", type = Node.class, required = false),
-        @XmlElementRef(name = "SimpleSetPredicate", namespace = "http://www.dmg.org/PMML-4_2", type = SimpleSetPredicate.class, required = false),
-        @XmlElementRef(name = "Regression", namespace = "http://www.dmg.org/PMML-4_2", type = Regression.class, required = false)
-    })
-    protected List<Object> content;
     @XmlAttribute(name = "id")
-    protected String id;
-    @XmlAttribute(name = "score")
-    protected String score;
+    private String id;
+    @XmlAttribute(name = "score")    
+    private String score;
     @XmlAttribute(name = "recordCount")
-    protected Double recordCount;
-    @XmlAttribute(name = "defaultChild")
-    protected String defaultChild;
-
+    private Double recordCount;
+    @XmlAttribute(name = "defaultChild")  
+    private String defaultChild;
+    @XmlElement(name = "Extension", namespace = "http://www.dmg.org/PMML-4_2")
+    private List<Extension> extensions;
+    @XmlElements(value = {
+        @XmlElement(name = "SimplePredicate", namespace = "http://www.dmg.org/PMML-4_2", type = SimplePredicate.class),
+        @XmlElement(name = "CompoundPredicate", namespace = "http://www.dmg.org/PMML-4_2", type = CompoundPredicate.class),
+        @XmlElement(name = "SimpleSetPredicate", namespace = "http://www.dmg.org/PMML-4_2", type = SimpleSetPredicate.class),
+        @XmlElement(name = "True", namespace = "http://www.dmg.org/PMML-4_2", type = True.class),
+        @XmlElement(name = "False", namespace = "http://www.dmg.org/PMML-4_2", type = False.class)})
+    private Object predicate;
+    @XmlElement(name = "Partition", namespace = "http://www.dmg.org/PMML-4_2")
+    private Partition partition;
+    @XmlElement(name = "ScoreDistribution", namespace = "http://www.dmg.org/PMML-4_2")
+    private List<ScoreDistribution> scoreDistributions;
+    @XmlElement(name = "Node", namespace = "http://www.dmg.org/PMML-4_2")
+    private List<Node> nodes;
+    @XmlElements(value = {
+        @XmlElement(name = "Regression", namespace = "http://www.dmg.org/PMML-4_2", type = Regression.class),
+        @XmlElement(name = "DecisionTree", namespace = "http://www.dmg.org/PMML-4_2", type = DecisionTree.class)})
+    private Object embeddedModel;
+    private static final long serialVersionUID = 67305473L;
     /**
      * Obtiene el resto del modelo de contenido. 
      * 
@@ -123,13 +128,7 @@ public class Node {
      * 
      * 
      */
-    public List<Object> getContent() {
-        if (content == null) {
-            content = new ArrayList<Object>();
-        }
-        return this.content;
-    }
-
+  
     /**
      * Obtiene el valor de la propiedad id.
      * 
@@ -226,4 +225,28 @@ public class Node {
         this.defaultChild = value;
     }
 
+    public List<ScoreDistribution> getScoreDistributions()
+    {
+        return this.scoreDistributions;
+    }
+    
+    public List<Node> getNodes()
+    {
+        if (nodes == null)
+        {
+            nodes = new ArrayList<Node>();
+        }
+        return this.nodes;
+    }
+    
+     public void setScoreDistributions(List<ScoreDistribution> sd)
+    {
+       this.scoreDistributions = sd;
+    }
+    
+     public void setPredicate(Object p)
+     {
+         this.predicate = p;
+     }
 }
+

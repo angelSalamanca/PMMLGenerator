@@ -10,6 +10,8 @@ package pmmlgenerator.modelbuilders;
  * @author Angel Salamanca
  */
 import java.util.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import pmmlgenerator.*;
 import pmmlgenerator.util.*;
 import pmmlgenerator.PMML42.*;    
@@ -49,10 +51,13 @@ public Targets build(ModelContext modelContext)
             break;
             
         default:
+            BigDecimal priorProb = new BigDecimal(1.0/modelContext.categories.size());
+            priorProb = priorProb.setScale(6, RoundingMode.DOWN);
             for (String category : modelContext.categories)
             {
                 TargetValue value = new TargetValue();
                 value.setValue(category);
+                value.setPriorProbability(priorProb);
                 target.getTargetValue().add(value);
             }
             

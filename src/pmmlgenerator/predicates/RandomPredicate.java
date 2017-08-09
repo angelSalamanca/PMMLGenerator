@@ -25,7 +25,7 @@ public class RandomPredicate {
             topPredicate = 2;
         }
         
-        switch(modelContext.generator.intValue(1, topPredicate))  // TODO SimpleSet
+        switch(modelContext.generator.intValue(1, topPredicate))  
         {
             case 1:
                  SimpleSetPredicateBuilder sspb = new SimpleSetPredicateBuilder();

@@ -206,10 +206,18 @@ public class TransformationDictionaryBuilder {
           Apply apply = new Apply();
           apply.setFunction("ln");
           Apply apply2 = new Apply();
-          apply2.setFunction("abs");          
+          apply2.setFunction("+");  
+          Constant constant = new Constant();
+          constant.setDataType(DATATYPE.DOUBLE);
+          constant.setValue("0.001");
+          apply2.getEXPRESSION().add(constant);
+          
+          Apply apply3 = new Apply();
+          apply3.setFunction("abs");  
           FieldRef fr = new FieldRef();
           fr.setField("safe1");
-          apply2.getEXPRESSION().add(fr);
+          apply3.getEXPRESSION().add(fr);
+          apply2.getEXPRESSION().add(apply3);
           apply.getEXPRESSION().add(apply2);
           df.setApply(apply);
           functions.add(df);
@@ -227,12 +235,41 @@ public class TransformationDictionaryBuilder {
           pfl.add(pf);
           apply = new Apply();
           apply.setFunction("log10");
-          apply2 = new Apply();
-          apply2.setFunction("abs");          
+         apply2 = new Apply();
+          apply2.setFunction("+");  
+          constant = new Constant();
+          constant.setDataType(DATATYPE.DOUBLE);
+          constant.setValue("0.001");
+          apply2.getEXPRESSION().add(constant);          
+          apply3 = new Apply();
+          apply3.setFunction("abs");  
+          fr = new FieldRef();
+          fr.setField("safe1");
+          apply3.getEXPRESSION().add(fr);
+          apply2.getEXPRESSION().add(apply3);
+          apply.getEXPRESSION().add(apply2);
+          df.setApply(apply);
+          functions.add(df);
+          
+          // Safe sqrt
+          df = new DefineFunction();
+          df.setName("safesqrt10");
+          df.setDataType(DATATYPE.DOUBLE);
+          df.setOptype(OPTYPE.CONTINUOUS);
+          pfl = df.getParameterField();
+          pf = new ParameterField();
+          pf.setName("safe1");
+          pf.setDataType(DATATYPE.DOUBLE);
+          pf.setOptype(OPTYPE.CONTINUOUS);
+          pfl.add(pf);
+          apply = new Apply();
+          apply.setFunction("sqrt");
+          apply2 = new Apply();          
+          apply2.setFunction("abs");  
           fr = new FieldRef();
           fr.setField("safe1");
           apply2.getEXPRESSION().add(fr);
-          apply.getEXPRESSION().add(apply2);
+          apply.getEXPRESSION().add(apply2);          
           df.setApply(apply);
           functions.add(df);
           

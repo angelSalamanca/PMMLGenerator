@@ -22,9 +22,9 @@ public class SimplePredicateBuilder extends PredicateBuilder {
       {
           SimplePredicate sp = new SimplePredicate();
           
-          List<FieldDescriptor> fds = modelContext.context.getFieldDescriptorsForModel(); // all kind of fields: MS, TD and LT
-          fds = modelContext.context.keepContinuousFDS(fds);
-          FieldDescriptor fd = fds.get(modelContext.generator.intValue(0, fds.size()-1));
+          DATATYPE fddatatype = modelContext.generator.pickDataType();
+          
+          FieldDescriptor fd = modelContext.context.randomField(fddatatype, true, false, false, false); // 
           FieldHelper fh = new FieldHelper(fd.fieldName, fd.modelContext);
           sp.setField(fd.fieldName);
           DATATYPE datatype = fh.getDataType();

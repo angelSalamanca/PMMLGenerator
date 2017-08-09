@@ -43,6 +43,8 @@ public class PMMLGenerator {
         numRecords = 10;
         pmmlPath = "D:\\";
         General.modelLevel = 0;
+        General.seed = System.currentTimeMillis();    
+        General.witness("Random seed :" + String.valueOf(General.seed));
         generator = new NameGenerator();
         
        try
@@ -66,7 +68,7 @@ public class PMMLGenerator {
             tries +=1;
             success = generate();            
             if(!success) {
-                    General.addToModelLevel(-1);
+                   General.addToModelLevel(-1);
                    General.witness("Generation failed. Retrying.");
             }
             else
@@ -81,9 +83,9 @@ public class PMMLGenerator {
     {
             try
            {
-                  pmml = new PMML();                  
-                  context = new Context();                                  
-                  General.attributeConstraintUniverse = (new ConstraintGenerator()).LoadAttributeConstraints();               
+                pmml = new PMML();                  
+                context = new Context();                                  
+                General.attributeConstraintUniverse = (new ConstraintGenerator()).LoadAttributeConstraints();               
         
                 pmml.setVersion("4.2");
                 // Meaningless header
@@ -103,7 +105,7 @@ public class PMMLGenerator {
                 {
                     pmmlId = generator.intValue(10000,99999);
                 }
-                PMMLwriter writer = new PMMLwriter(pmmlPath, String.valueOf(pmmlId));
+                PMMLwriter writer = new PMMLwriter(pmmlPath, String.valueOf(pmmlId), context.getRootContext().getModelStem());
                 try
                 {
                     writer.write(pmml);
@@ -114,7 +116,7 @@ public class PMMLGenerator {
                 }
                 General.witness("PMML file written");
                 // generate data
-                writer.writeData(pmml, numRecords, generator);
+                writer.writeData(pmml, numRecords, context);
         
                 General.witness("Data file written");
       
@@ -136,7 +138,7 @@ public class PMMLGenerator {
        
         
         dddriver.categoricalInteger = new IntDuple(1,10);
-        dddriver.categoricalIntegerValues = new IntDuple(0,5);
+        dddriver.categoricalIntegerValues = new IntDuple(0, 5);
         
         dddriver.ordinalString = new IntDuple(0,5);
          dddriver.ordinalStringValues = new IntDuple(2,10);
@@ -144,15 +146,15 @@ public class PMMLGenerator {
         dddriver.ordinalInteger = new IntDuple(1,5);
         dddriver.ordinalIntegerValues = new IntDuple(0,5);
         
-        dddriver.continuousInteger = new IntDuple(1,20);
+        dddriver.continuousInteger = new IntDuple(0,20);
         dddriver.continuousIntegerValues = new IntDuple(0,1);
         dddriver.continuousIntegerIntervals = new IntDuple(0,3);
         
-        dddriver.continuousFloat = new IntDuple(1,20);
+        dddriver.continuousFloat = new IntDuple(0,20);
         dddriver.continuousFloatValues = new IntDuple(0,1);
         dddriver.continuousFloatIntervals = new IntDuple(0,3);
         
-        dddriver.continuousDouble = new IntDuple(1,20);
+        dddriver.continuousDouble = new IntDuple(0,20);
         dddriver.continuousDoubleValues = new IntDuple(0,1);
         dddriver.continuousDoubleIntervals = new IntDuple(0,5);
                 

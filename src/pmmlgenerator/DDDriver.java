@@ -216,7 +216,7 @@ public class DDDriver {
         switch(myType)
         {
             case STRING:
-                  for (int i=0; i<valuesDuple.actualNumber; i++)
+                  for (int i=0; i<Math.min(2, valuesDuple.actualNumber); i++)
                  {
                    Value myValue = new Value();
                    myValue.setValue(nameGenerator.stringValue(3));
@@ -237,10 +237,18 @@ public class DDDriver {
                 
             case DOUBLE:
                 
-                Value myValue = new Value();
-                myValue.setValue(this.nameGenerator.missingDoubleValue());
-                myValue.setProperty("missing");               
-                myList.add(myValue);                        
+                if (datafield.getInterval()!=null)
+                {
+                    if (datafield.getInterval().size()>0)  // otherwise we generate missing for all rows
+                            {
+                                Value myValue = new Value();
+                               myValue.setValue(this.nameGenerator.missingDoubleValue());
+                               myValue.setProperty("missing");               
+                               myList.add(myValue);          
+                            }
+                }
+                
+                              
                 break;
                 
             case FLOAT:

@@ -42,7 +42,13 @@ public class FieldDescriptor {
     
       public Boolean isGRMTargetCompatible(MININGFUNCTION modelFunction) throws Exception
     {
-                
+        // It can not be affected in TD
+        if (this.modelContext.isDerivedAffectedAnywhere(this.fieldName))
+                {
+                    return false;
+                }
+        
+        
         switch(modelFunction) 
         {
             case CLASSIFICATION:
