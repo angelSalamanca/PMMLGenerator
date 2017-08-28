@@ -16,18 +16,19 @@ import pmmlgenerator.PMML42.*;
  */
 public class NameGenerator {
     
+    private Context context;
     private Random randomGenerator;
     private Map<String,Integer> fieldNums;
     private String derivedFieldPreffix = "";
-   private String[] words = {"alcazar", "bingle", "canorous", "deedy", "flews", "gaita", "higgler", "ingurgigate", "jumentouous", "kenspeckle", "lobola", "martlet", "nagware", "apparel", "befall","commend", "fare"}; 
+    private String[] words = {"alcazar", "bingle", "canorous", "deedy", "flews", "gaita", "higgler", "ingurgigate", "jumentouous", "kenspeckle", "lobola", "martlet", "nagware", "apparel", "befall","commend", "fare"}; 
    
    
-    public NameGenerator()
+    public NameGenerator(Context context)
     {
         randomGenerator = new Random();
        
        // randomGenerator.setSeed(General.seed);
-      
+        this.context = context;
         this.fieldNums = new HashMap<String,Integer>();
         this.fieldNums.put("String",1);
         this.fieldNums.put("Integer",1);
@@ -99,7 +100,13 @@ public class NameGenerator {
     
     private String getVarNum()
     {
-        int varNum = randomGenerator.nextInt(99999);
+        int varNum;
+        
+        do
+        {
+            varNum = randomGenerator.nextInt(99999);
+        } while(this.context.varNumExists(varNum));
+        
         return String.valueOf(varNum);
     }
     
@@ -249,7 +256,7 @@ public class NameGenerator {
          }
          catch (Exception e) {
              General.witness("intValue: " + String.valueOf(a) + " " +String.valueOf(b));
-             throw new Exception("intValue", e);
+             throw new RuntimeException("intValue", e);
          }         
      }
      
@@ -398,9 +405,7 @@ public class NameGenerator {
             StringBuilder sb = new StringBuilder();
             Integer n = this.intValue(1, 7);
             BigInteger bin = new BigInteger(String.valueOf(n));
-            arraytype.setN(bin);
-
-           
+            arraytype.setN(bin);           
             
             List<String> elements = new ArrayList<String>();
             

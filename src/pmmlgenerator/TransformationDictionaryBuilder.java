@@ -23,8 +23,9 @@ public class TransformationDictionaryBuilder {
     public TransformationDictionaryBuilder(Context thisContext)
     {
         pmml = PMMLGenerator.pmml;
-        generator = new NameGenerator();      
+
         this.context = thisContext;
+        generator = new NameGenerator(this.context);      
         if(this.context.getCurrentContext().isRoot())
         {
             this.generator.setDerivedPreffix("Global");

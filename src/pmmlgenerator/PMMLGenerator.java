@@ -45,7 +45,7 @@ public class PMMLGenerator {
         General.modelLevel = 0;
         General.seed = System.currentTimeMillis();    
         General.witness("Random seed :" + String.valueOf(General.seed));
-        generator = new NameGenerator();
+        generator = new NameGenerator(null);
         
        try
         {

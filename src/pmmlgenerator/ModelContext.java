@@ -25,6 +25,7 @@ public class ModelContext {
     public RegressionModel rm;
     public TreeModel treeModel;
     public MiningModel miningModel;
+    public SupportVectorMachineModel svmModel;
     
     private MiningField targetField;
     public List<String> categories;
@@ -137,21 +138,7 @@ public class ModelContext {
         return this.name;
     }
    
-    
-    private Object createModel() throws Exception
-        {
-        switch(theClass)
-        {
-            case "GeneralRegressionModel":
-                return new GeneralRegressionModel();
-            case "TreeModel":
-                return new TreeModel();
-            case "MiningModel":
-                return new MiningModel();
-            default:
-                throw new Exception("Unexpected model family");
-        }
-    }
+
     
     public Object getModel() throws Exception
         {
@@ -165,6 +152,8 @@ public class ModelContext {
                 return this.rm ;
             case "MiningModel":
                 return this.miningModel;
+            case "SupportVectorMachineModel":
+                return this.svmModel;    
             case "DefineFunction":
                 return this.PMMLModel;
             case "PMML":
@@ -200,7 +189,9 @@ public class ModelContext {
                 this.miningModel = (MiningModel)PMMLModel;
                 break;
              
-                 
+            case "SupportVectorMachineModel":
+                this.svmModel = (SupportVectorMachineModel)PMMLModel;
+                break; 
                 
             default:
                 throw new Exception("Unexpected class in castModel: " + theClass);
@@ -246,6 +237,12 @@ public class ModelContext {
                 RegressionModel rm = (RegressionModel)model;
                 lt = (LocalTransformations)cu.getFromContent(rm.getContent(),"LocalTransformations");
                 break;    
+                 
+             case "SupportVectorMachineModel":
+                SupportVectorMachineModel svm = (SupportVectorMachineModel)model;
+                lt = (LocalTransformations)cu.getFromContent(svm.getContent(),"LocalTransformations");
+                break;    
+                 
             
             default:
                return null;
@@ -270,7 +267,7 @@ public class ModelContext {
             case "TreeModel":
             case "MiningModel":    
             case "RegressionModel":    
-                
+            case "SupportVectorMachineModel":                
                 return true;
             default:
                 throw new Exception("Unexpected class");
@@ -312,6 +309,8 @@ public class ModelContext {
                     return false;
                 }
            
+             case "SupportVectorMachineModel":
+                return false; //? 
             
             case "MiningModel":
                 return false;  //TODO in modelChain look at last model characteristics
@@ -347,6 +346,9 @@ public class ModelContext {
                    
                  case "RegressionModel":
                    return rm.getFunctionName() == MININGFUNCTION.REGRESSION;    
+                     
+                 case "SupportVectorMachineModel":
+                   return this.svmModel.getFunctionName() == MININGFUNCTION.REGRESSION;         
                    
                 default:
                     throw new Exception("Unexpected class");     
@@ -377,6 +379,12 @@ public class ModelContext {
       {
           MiningModelBuilder mmb = new MiningModelBuilder(this);
           mmb.build(isRegression);
+      }
+       
+         private void buildSVMModel(Boolean isRegression) throws Exception
+      {
+          SVMModelBuilder svmb = new SVMModelBuilder(this);
+          svmb.build(isRegression);
       }
       
       public String getTargetReferenceCategory(ModelContext mContext) throws Exception
@@ -410,6 +418,11 @@ public class ModelContext {
             case "MiningModel":
                 this.buildMiningModel(isRegression);
                 break;
+                
+            case "SupportVectorMachineModel":
+                this.buildSVMModel(isRegression);
+                break;
+                
             default:
                 throw new Exception("Unexpected class");
           }
@@ -434,9 +447,11 @@ public class ModelContext {
             case "MiningModel":
                 return (MiningSchema)this.cu.getFromContent(this.miningModel.getContent(), "MiningSchema");
                 
+            case "SupportVectorMachineModel":
+                return (MiningSchema)this.cu.getFromContent(this.svmModel.getContent(), "MiningSchema");    
                 
             default:
-                throw new Exception("Unexpected class");
+                throw new Exception("Unexpected class in getMiningSchema");
         }   
       }
       
@@ -608,6 +623,12 @@ public class ModelContext {
               case "MiningModel":
                 return "mm";
               
+               case "SupportVectorMachineModel":
+                return "svm";     
+               
+               case "Scorecard":
+                  return "scorecard";     
+                   
              default:
                return "unknown";
          }

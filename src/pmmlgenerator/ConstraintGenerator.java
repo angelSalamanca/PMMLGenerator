@@ -46,6 +46,8 @@ public class ConstraintGenerator {
             constraint.addForbidden("MODEL_CHAIN","REGRESSION");
             constraint.addForbidden("MAX", "REGRESSION");            
             constraint.addForbidden( "SUM", "CLASSIFICATION");
+            // constraint.addForbidden( "AVERAGE", "CLASSIFICATION");  works with ptobabilities
+            // constraint.addForbidden( "WEIGHTED_AVERAGE", "CLASSIFICATION"); works with probabilities
             
             myUniverse.addConstraint(constraint);
             

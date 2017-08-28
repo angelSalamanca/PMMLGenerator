@@ -58,15 +58,16 @@ public class SegmentationBuilder {
         }
         else
         {
-            this.numSegments = this.generator.intValue(5, 100);
+            // Temporary
+            this.numSegments = this.generator.intValue(4, 10);
+            // Temporary
         }
-        // Temporary
-        numSegments = 2;
-        // Temporary
+                
         for(int i=0; i<this.numSegments; i++)
         {
             SegmentBuilder sb = new SegmentBuilder();
-            Segment newSegment = sb.build(this.modelContext);
+            Boolean needsWeight = General.methodsWithWeight.contains(segmentation.getMultipleModelMethod().toString());
+            Segment newSegment = sb.build(this.modelContext, needsWeight);
             segmentation.getSegment().add(newSegment);
             General.witness("  Segment " + String.valueOf(i) + " built class " + sb.getSegmentType());
         }

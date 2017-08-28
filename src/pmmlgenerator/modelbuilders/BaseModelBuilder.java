@@ -6,6 +6,7 @@
 package pmmlgenerator.modelbuilders;
 
 import pmmlgenerator.ModelContext;
+import pmmlgenerator.util.ContentUtil;
 import pmmlgenerator.util.Context;
 import pmmlgenerator.util.NameGenerator;
 
@@ -19,6 +20,7 @@ abstract public class BaseModelBuilder {
     protected ModelContext modelContext;
     protected NameGenerator generator;
     protected String[] available;
+    protected ContentUtil cu;
     
     public BaseModelBuilder(ModelContext thismc)
     {

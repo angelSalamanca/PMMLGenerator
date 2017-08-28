@@ -28,7 +28,7 @@ public class GRMBuilder extends BaseModelBuilder {
     private List<String> categories;
     private GeneralRegressionModel grm;
     private Integer paramNum;
-    private ContentUtil cu;
+    
     
     public GRMBuilder(ModelContext thismc)
     {
@@ -40,7 +40,7 @@ public class GRMBuilder extends BaseModelBuilder {
     
     public void build(Boolean isRegression) throws Exception
     {
-           this. grm = this.modelContext.grm;
+           this.grm = this.modelContext.grm;
           
           grm.setModelName(this.modelContext.getName());                
                 

@@ -21,7 +21,7 @@ public class SegmentBuilder {
     
     private Segment segment;
             
-    public Segment build(ModelContext modelContext) throws Exception
+    public Segment build(ModelContext modelContext, Boolean needsWeight) throws Exception
     {
         this.segment = new Segment();
         RandomPredicate rp = new RandomPredicate();
@@ -42,6 +42,10 @@ public class SegmentBuilder {
         segment.setMiningModel(segmentContext.miningModel);
         segment.setTreeModel(segmentContext.treeModel);
        
+        if (needsWeight)
+        {
+            segment.setWeight(modelContext.generator.doubleValue());
+        }
         
         return segment;
     }

@@ -26,17 +26,19 @@ public class Context {
    private Integer selected;
    private ContentUtil cu;
    private List<FieldDescriptor> fds;
+   private Map<Integer, Boolean> usedNums;
    
    
    public Context() throws Exception
    {     
-       this.generator = new NameGenerator();
+       this.generator = new NameGenerator(this);
        this.builtInFunctions = populateBuiltInFunctions();
        this.safeFunctions = new ArrayList<BuiltinFunction>();
        this.stringBuiltInFunctions = populateStringBuiltinFunctions();
        this.rootContext = new ModelContext(this, "PMML");
        this.setCurrentContext(this.rootContext);         
        this.cu = new ContentUtil();
+       this.usedNums = new HashMap<Integer, Boolean>();
    }
    
    public MiningField getMaingTargetField()
@@ -407,5 +409,17 @@ public class Context {
       {
           return this.currentContext.getFieldFromMF(mf);
       }
+      
+      public boolean varNumExists(Integer vn)
+      {
+          return (this.usedNums.containsKey(vn));
+      }
  
+      public void useVarNum(Integer vn)
+      {
+          if (!varNumExists(vn))
+          {
+              this.usedNums.put(vn, Boolean.TRUE);
+          }
+      }
 }

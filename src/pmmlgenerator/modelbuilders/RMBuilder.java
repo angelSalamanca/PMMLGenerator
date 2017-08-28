@@ -92,9 +92,6 @@ public class RMBuilder extends BaseModelBuilder {
                             
                   }
                 
-                
-                
-                
     }
     
     private RegressionTable buildRegressionTable(String categoryName) throws Exception
@@ -105,6 +102,8 @@ public class RMBuilder extends BaseModelBuilder {
         {
             rt.setTargetCategory(categoryName);
         }
+        
+        rt.setIntercept(this.generator.doubleValue(-0.2, 0.2));
         
         // Numeric
          // retrieve all mining fields

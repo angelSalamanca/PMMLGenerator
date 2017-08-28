@@ -47,7 +47,7 @@ public class DDDriver {
     
     public List<DataField> getDataFields() throws Exception
     {
-        this.nameGenerator = new NameGenerator();
+        this.nameGenerator = new NameGenerator(null);
         this.dfList = new ArrayList<DataField>();
         
         this.dfList.addAll(addCategoricalString());

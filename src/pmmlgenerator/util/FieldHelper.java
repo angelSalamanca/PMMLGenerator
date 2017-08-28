@@ -34,7 +34,7 @@ public class FieldHelper {
     {
         this.theField = genericField;        
         this.castField();
-        this.generator = new NameGenerator();
+        this.generator = new NameGenerator(null);
         this.cu = new ContentUtil();
     }    
     
@@ -97,6 +97,14 @@ public class FieldHelper {
                isModel = true;
                addTransfDict = true;
                break; 
+          
+          case "SupportVectorMachineModel":
+                  SupportVectorMachineModel svmModel = (SupportVectorMachineModel)container;
+                  content = cu.getFromContent(svmModel.getContent(), "MiningSchema");
+                  lt = (LocalTransformations)cu.getFromContent(svmModel.getContent(),"LocalTransformations");
+                  isModel = true;
+                  addTransfDict = true;
+                  break;
               
           case "DefineFunction":
                 DefineFunction df  = (DefineFunction)container;

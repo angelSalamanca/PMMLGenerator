@@ -38,8 +38,8 @@ public class ModelBuilder {
     public ModelBuilder(PMML aPMML, Context thisContext)
     {
         pmml = aPMML;
-        nameGenerator = new NameGenerator();      
         this.context = thisContext;
+        this.nameGenerator = new NameGenerator(this.context);      
         this.cu = new ContentUtil();
     }
     
@@ -47,10 +47,11 @@ public class ModelBuilder {
     {
         General.addToModelLevel(1);
         String modelFamily = nameGenerator.pickOne(General.models);
-       // modelFamily = "MiningModel";
-        //   modelFamily = "GeneralRegressionModel";
-       // modelFamily = "TreeModel";
-         modelFamily = "RegressionModel";
+        // modelFamily = "MiningModel";
+         //  modelFamily = "GeneralRegressionModel";
+      // modelFamily = "TreeModel";
+       //  modelFamily = "RegressionModel";
+       modelFamily = "SupportVectorMachineModel";
          numTargetCategories = 2; // binomial by default
         
         switch(modelFamily)
@@ -86,6 +87,15 @@ public class ModelBuilder {
                 modelContext = new ModelContext(this.context, miningModel, modelFamily);
                 modelContext.build(null);
                 pmml.getAssociationModelOrBaselineModelOrClusteringModel().add(modelContext.miningModel);
+                break;
+                
+                case "SupportVectorMachineModel":
+                General.witness("SupportVectorMachineModel:");
+                SupportVectorMachineModel svmModel = new SupportVectorMachineModel();                 
+                modelContext = new ModelContext(this.context, svmModel, modelFamily);
+                modelContext.build(null);
+                pmml.getAssociationModelOrBaselineModelOrClusteringModel().add(modelContext.svmModel);
+                
                 break;
                 
             default:
