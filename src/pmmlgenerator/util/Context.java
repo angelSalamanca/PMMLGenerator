@@ -27,6 +27,7 @@ public class Context {
    private ContentUtil cu;
    private List<FieldDescriptor> fds;
    private Map<Integer, Boolean> usedNums;
+   private String whichModel; 
    
    
    public Context() throws Exception
@@ -41,7 +42,17 @@ public class Context {
        this.usedNums = new HashMap<Integer, Boolean>();
    }
    
-   public MiningField getMaingTargetField()
+   public String getWhichModel()
+   {
+       return this.whichModel;
+   }
+   
+   public void setWhichModel(String model)
+   {
+       this.whichModel = model;
+   }
+   
+   public MiningField getMainTargetField()
    {
        List<ModelContext> childrenGen1 = this.rootContext.getChildren();
        ModelContext mainContext = childrenGen1.get(childrenGen1.size()-1);
@@ -421,5 +432,11 @@ public class Context {
           {
               this.usedNums.put(vn, Boolean.TRUE);
           }
+      }
+      
+      public ModelContext getTopModelContext()
+      {
+          List<ModelContext> children = this.rootContext.getChildren();          
+          return children.get(children.size()-1);
       }
 }

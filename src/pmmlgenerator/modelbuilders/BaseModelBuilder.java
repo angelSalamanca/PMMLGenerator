@@ -5,10 +5,12 @@
  */
 package pmmlgenerator.modelbuilders;
 
+import java.util.List;
 import pmmlgenerator.ModelContext;
 import pmmlgenerator.util.ContentUtil;
 import pmmlgenerator.util.Context;
 import pmmlgenerator.util.NameGenerator;
+import pmmlgenerator.PMML42.*;   
 
 /**
  *
@@ -21,6 +23,10 @@ abstract public class BaseModelBuilder {
     protected NameGenerator generator;
     protected String[] available;
     protected ContentUtil cu;
+    protected Integer numTargetCategories;   
+    protected List<String> categories;
+    protected MiningSchema ms;
+    
     
     public BaseModelBuilder(ModelContext thismc)
     {

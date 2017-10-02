@@ -51,10 +51,11 @@ public class RMBuilder extends BaseModelBuilder {
           // available = General.attributeConstraintUniverse.getAvailableValues("RegressionModel", "modelType", "functionName", rm.getFunctionName().name(), General.RMModelTypes);
           // rm.setModelType(generator.pickOne(available));             
             
-            General.witness(" Function Name: " + rm.getFunctionName().toString());    
+          General.witness(" Function Name: " + rm.getFunctionName().toString());    
             
-            rm.setNormalizationMethod(REGRESSIONNORMALIZATIONMETHOD.valueOf(generator.pickOne(General.RMNormalizationMethods)));
-            General.witness(" Normalization method: " + rm.getNormalizationMethod().toString());    
+          available = General.attributeConstraintUniverse.getAvailableValues("RegressionModel", "regressionNormalizationMethod", "functionName", rm.getFunctionName().name(), General.RMNormalizationMethods);
+          rm.setNormalizationMethod(REGRESSIONNORMALIZATIONMETHOD.valueOf(generator.pickOne(available)));
+          General.witness(" Normalization method: " + rm.getNormalizationMethod().toString());    
            
               // MiningSchema
                  MiningSchemaBuilder msb = new MiningSchemaBuilder(true, this.modelContext);
@@ -81,15 +82,14 @@ public class RMBuilder extends BaseModelBuilder {
                 { 
                     for (int rTable =0; rTable<numTargetCategories; rTable++)
                    {
-                       RegressionTable rt = buildRegressionTable(this.categories.get(rTable));
+                      RegressionTable rt = buildRegressionTable(this.categories.get(rTable));
                       cu.addToContent(rm.getContent(), rt);
                     }
                }
                 else
                 {
                      RegressionTable rt = buildRegressionTable(null);
-                      cu.addToContent(rm.getContent(), rt);
-                            
+                     cu.addToContent(rm.getContent(), rt);                            
                   }
                 
     }

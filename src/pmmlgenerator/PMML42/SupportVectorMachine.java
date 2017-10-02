@@ -102,6 +102,10 @@ public class SupportVectorMachine {
      *     
      */
     public SupportVectors getSupportVectors() {
+        if (this.supportVectors == null)
+        {
+            this.supportVectors = new SupportVectors();
+        }
         return supportVectors;
     }
 
@@ -126,6 +130,10 @@ public class SupportVectorMachine {
      *     
      */
     public Coefficients getCoefficients() {
+          if (this.coefficients == null)
+        {
+            this.coefficients = new Coefficients();
+        }
         return coefficients;
     }
 

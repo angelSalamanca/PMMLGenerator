@@ -52,6 +52,11 @@ public class OutputBuilder {
             }
         }
         
+        if (modelContext.hasReasonCodes())
+        {
+            
+        }
+        
         General.witness("  Output built");
         return output;
     }

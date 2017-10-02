@@ -20,6 +20,7 @@ import pmmlgenerator.TransformationDictionaryBuilder;
 public class SVMModelBuilder extends BaseModelBuilder {
     
      SupportVectorMachineModel svmModel;
+     private  VectorFields vfs;
     
      public SVMModelBuilder(ModelContext thismc)
     {
@@ -31,18 +32,36 @@ public class SVMModelBuilder extends BaseModelBuilder {
      
      public void build(Boolean isRegression) throws Exception
     {
-           this.svmModel = this.modelContext.svmModel;
+         this.svmModel = this.modelContext.svmModel;
           
           svmModel.setModelName(this.modelContext.getName());                
                 
            this.context.setCurrentContext(modelContext);           
+           
+           // attributes
            svmModel.setFunctionName(MININGFUNCTION.valueOf(generator.pickOne(General.GRMFunctions)));
+           svmModel.setAlgorithmName("Algo " +  generator.getSentence(2));
+           
+           if (generator.doubleValue()<0.1)
+           {
+               svmModel.setThreshold(generator.doubleValue(0,1E-4));
+           }
+           if (generator.doubleValue()<0.5)
+           {
+               svmModel.setSvmRepresentation(SVMREPRESENTATION.valueOf(generator.pickOne(General.SVMRepresentations)));
+           }
+            if (generator.doubleValue()<2)  // temporary, should be 0.5 in 4.3
+           {
+               svmModel.setClassificationMethod(SVMCLASSIFICATIONMETHOD.valueOf(generator.pickOne(General.SVMClassificationMethods)));
+           }
             
                 // TODO endTimeVariable, startTimeVariable
                 
                 // MiningSchema
                  MiningSchemaBuilder msb = new MiningSchemaBuilder(true, this.modelContext);
                  MiningSchema ms = msb.build(this.svmModel.getFunctionName());
+                 this.numTargetCategories = msb.numTargetCategories;
+                 this.categories = msb.categories;
                  this.svmModel.getContent().add(ms);
                  this.context.createFieldUniverse(); // update
                 
@@ -60,8 +79,40 @@ public class SVMModelBuilder extends BaseModelBuilder {
                
                this.addVectorDictionary();
                
-               this.addSupportVectorMachine();
-                               
+               Integer numOfMachines = 1; // ????
+               // determine # of machines
+               switch (this.svmModel.getFunctionName())
+               {
+                   case REGRESSION:
+                       // 1 = Ok
+                        this.addSupportVectorMachine(null, null);
+                       break;
+                       
+                   case CLASSIFICATION:
+                       if (this.svmModel.getClassificationMethod() == SVMCLASSIFICATIONMETHOD.ONE_AGAINST_ONE) {
+                           numOfMachines = this.numTargetCategories * (this.numTargetCategories -1) / 2;
+                           for (int i=0; i<this.numTargetCategories; i++)
+                           {
+                               for (int j= i + 1; j<this.numTargetCategories; j++)
+                               {
+                                     this.addSupportVectorMachine(this.categories.get(i), this.categories.get(j));
+                               }
+                           }
+                       }
+                        if (this.svmModel.getClassificationMethod() == SVMCLASSIFICATIONMETHOD.ONE_AGAINST_ALL) {
+                           numOfMachines = this.numTargetCategories;
+                           for (int i=0; i<numOfMachines; i++) {
+                                this.addSupportVectorMachine(this.categories.get(i), null);
+                            }
+               
+                       }
+                                              
+                       break;
+                       
+                   default: // not happenning    
+               }
+               
+
                 // cu.addToContent(grm.getContent(), pl);  // Order of addition is important!
                 // Get # of categories from target field
                 //  if (this.svmModel.getFunctionName() ==MININGFUNCTION.CLASSIFICATION ){
@@ -69,6 +120,11 @@ public class SVMModelBuilder extends BaseModelBuilder {
                  // }
                  
     }
+     
+     public BigInteger getVectorFieldsNum()
+     {
+         return this.vfs.getNumberOfFields();
+     }
      
      private void addKernel() throws Exception {
     
@@ -93,6 +149,7 @@ public class SVMModelBuilder extends BaseModelBuilder {
                  RadialBasisKernelType rbkt = new RadialBasisKernelType();
                  rbkt.setDescription(this.generator.getSentence(4));
                  rbkt.setGamma(this.generator.doubleValue(0.5, 4));
+                   this.cu.addToContent(this.svmModel.getContent(), rbkt);
                  break;
              default:
                  throw new RuntimeException("Unexpected kernel num");
@@ -105,7 +162,7 @@ public class SVMModelBuilder extends BaseModelBuilder {
          VectorDictionary vd = new VectorDictionary();
          
          // Vector Fields
-         VectorFields vfs = new VectorFields();
+        this.vfs = new VectorFields();
          
          vd.setVectorFields(vfs);
          List<FieldDescriptor> fds = this.context.getFieldDescriptorsForModel(); // all kind of fields: MS, TD and LT
@@ -147,9 +204,38 @@ public class SVMModelBuilder extends BaseModelBuilder {
          this.cu.addToContent(this.svmModel.getContent(), vd);
      }
      
-     private void addSupportVectorMachine()
+     private void addSupportVectorMachine(String targetCategory, String alternateTargetCategory) throws Exception
      {
          SupportVectorMachine svm = new SupportVectorMachine();
+         
+         // attributes         
+         if (alternateTargetCategory != null )
+         {
+                svm.setAlternateTargetCategory(alternateTargetCategory);
+          }
+         
+          if (targetCategory != null ) 
+          {
+            svm.setTargetCategory(targetCategory);
+          }  
+                  
+         // Support Vectors
+           VectorDictionary vd = (VectorDictionary)this.cu.getFromContent(this.svmModel.getContent(), "VectorDictionary");
+           
+         for (int i=0; i< vd.getNumberOfVectors().intValue(); i++)
+         {
+             if (this.generator.doubleValue()<0.4)
+             {
+                 SupportVector sv = new SupportVector();
+               
+                 sv.setVectorId(vd.getVectorInstance().get(i).getId());
+                 svm.getSupportVectors().getSupportVector().add(sv);
+
+                 svm.getCoefficients().addCoefficient(generator.doubleValue(-2, 2));
+             }
+         }
+         
+         // Coefficients
          
          this.cu.addToContent(this.svmModel.getContent(), svm);
      }
@@ -162,11 +248,11 @@ public class SVMModelBuilder extends BaseModelBuilder {
                  if (this.generator.booleanValue())
                  {
                      // REAL-Sparse 
-                     vi.setREALSparseArray(ArrayUtil.buildRealSparseArray(this.context.getCurrentContext()));                     
+                     vi.setREALSparseArray(ArrayUtil.buildRealSparseArray(this.context.getCurrentContext(), this.getVectorFieldsNum()));                     
                  }
                  else
                  {
-                      vi.setArray(ArrayUtil.buildRealArray(this.context.getCurrentContext())); 
+                      vi.setArray(ArrayUtil.buildRealArray(this.context.getCurrentContext(), this.getVectorFieldsNum())); 
                  }               
                  
                  

@@ -31,7 +31,7 @@ public class NodeBuilder {
         
         List<Node> nl = new ArrayList<Node>();
         Node node = new Node();
-        node.setId(this.modelContext.generator.stringValue(3));
+        node.setId(this.modelContext.generator.stringDashValue(3));
         String winner1 = null;
         String winner2 = null;
         Double maxCount = -1.0;
@@ -63,7 +63,7 @@ public class NodeBuilder {
         else
         {
             node2 = new Node();
-                    node2.setId(this.modelContext.generator.stringValue(3));
+                    node2.setId(this.modelContext.generator.stringDashValue(3));
                      if (this.modelContext.isRegression())
                     {
                         node2.setScore(String.valueOf(this.modelContext.generator.doubleValue(-5,5)));

@@ -35,7 +35,7 @@ public Targets build(ModelContext modelContext)
             if (modelContext.generator.doubleValue()<0.5)
             {
                 target.setMin(modelContext.generator.doubleValue(-10,10));
-                target.setMax(modelContext.generator.doubleValue(-10,10) + target.getMin());
+                target.setMax(modelContext.generator.doubleValue(0, 10) + target.getMin());
             }
             
             if (modelContext.generator.doubleValue()<0.5)

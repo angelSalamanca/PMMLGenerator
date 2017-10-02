@@ -122,7 +122,15 @@ public class VectorFields {
      *     
      */
     public BigInteger getNumberOfFields() {
-        return numberOfFields;
+        
+        if (numberOfFields == null)
+        {
+            return BigInteger.valueOf(this.fieldRef.size());
+        }
+        else
+        {        
+            return numberOfFields;
+        }
     }
 
     /**

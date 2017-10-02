@@ -105,6 +105,22 @@ public class FieldHelper {
                   isModel = true;
                   addTransfDict = true;
                   break;
+         
+          case "NeuralNetwork":
+                  NeuralNetwork nn = (NeuralNetwork)container;
+                  content = cu.getFromContent(nn.getContent(), "MiningSchema");
+                  lt = (LocalTransformations)cu.getFromContent(nn.getContent(),"LocalTransformations");
+                  isModel = true;
+                  addTransfDict = true;
+                  break;
+          
+          case "Scorecard":
+               Scorecard scorecard = (Scorecard)container;
+               content = cu.getFromContent(scorecard.getContent(), "MiningSchema");
+               lt = (LocalTransformations)cu.getFromContent(scorecard.getContent(),"LocalTransformations");
+               isModel = true;
+               addTransfDict = true;
+               break;         
               
           case "DefineFunction":
                 DefineFunction df  = (DefineFunction)container;

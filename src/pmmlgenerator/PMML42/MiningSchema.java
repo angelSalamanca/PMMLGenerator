@@ -107,5 +107,18 @@ public class MiningSchema {
         }
         return this.miningField;
     }
+    
+    public MiningField getTargetField()
+    {
+        for (MiningField mf : this.getMiningField())
+        {
+            if (mf.getUsageType().equals(FIELDUSAGETYPE.TARGET)) 
+            {
+                return mf;
+            }
+        }
+        
+        return null;
+    }
 
 }

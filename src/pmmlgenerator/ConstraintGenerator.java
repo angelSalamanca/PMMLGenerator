@@ -51,6 +51,17 @@ public class ConstraintGenerator {
             
             myUniverse.addConstraint(constraint);
             
+            constraint = new AttributeConstraint("RegressionModel", "regressionNormalizationMethod", "functionName");
+            constraint.addForbidden("SIMPLEMAX","REGRESSION");
+            constraint.addForbidden("PROBIT","REGRESSION");
+            constraint.addForbidden("CLOGLOG","REGRESSION");
+            constraint.addForbidden("LOGLOG","REGRESSION");
+            constraint.addForbidden("CAUCHIT","REGRESSION");
+            constraint.addForbidden("EXP","CLASSIFICATION");
+                        
+            
+            myUniverse.addConstraint(constraint);
+            
             
             
             

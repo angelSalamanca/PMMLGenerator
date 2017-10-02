@@ -104,7 +104,7 @@ public class DerivedFieldBuilder {
                 throw new Exception("Unexpected case");
                 }
              default:
-                throw new Exception("Unexpected case");
+              throw new Exception("Unexpected case");
            }
         }
         catch (Exception e)
@@ -113,9 +113,27 @@ public class DerivedFieldBuilder {
             throw new Exception("DerivedFieldBuilder", e);
         }
         
-
     }
 
+    public DerivedField buildForOutNN(Boolean isRegression, MiningField targetField, String value) throws Exception {
+       DATATYPE datatype = this.field.getDataType();
+       DerivedField derField;
+       
+       if (isRegression)
+       {                 
+            derField = this.fieldRefField(datatype);
+            derField.getFieldRef().setField(targetField.getName());
+            return derField;
+         }
+        else
+       {         
+            derField = this.normDiscreteField();    
+            derField.getNormDiscrete().setField(targetField.getName());
+            derField.getNormDiscrete().setValue(value);        
+       }    
+      return derField;
+    }
+      
     private DerivedField constantField(DATATYPE datatype) throws Exception
     {
         Constant constant = new Constant();
@@ -136,6 +154,15 @@ public class DerivedFieldBuilder {
         fieldref.setField(fd.fieldName);
         this.context.getCurrentContext().affectField(fd.fieldName);
 
+        return this.field;
+    }
+    
+    private DerivedField fieldRefField(DATATYPE datatype, String fieldName) throws Exception
+    {
+        FieldRef fieldref = new FieldRef();
+        this.field.setFieldRef(fieldref);
+
+        fieldref.setField(fieldName);
         return this.field;
     }
 
@@ -163,7 +190,7 @@ public class DerivedFieldBuilder {
         return this.field;
     }
 
-    private DerivedField normDiscreteField() throws Exception
+    public DerivedField normDiscreteField() throws Exception
     {
         NormDiscrete normd = new NormDiscrete();
         this.field.setNormDiscrete(normd);

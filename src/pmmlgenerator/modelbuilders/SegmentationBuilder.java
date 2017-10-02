@@ -51,6 +51,7 @@ public class SegmentationBuilder {
         }
         
         available = General.attributeConstraintUniverse.getAvailableValues("MiningModel", "multipleModelMethod", "functionName", miningFunction.toString(), General.multipleModelMethods);        
+       
         segmentation.setMultipleModelMethod(MULTIPLEMODELMETHOD.valueOf(this.generator.pickOne(available)));
         if (segmentation.getMultipleModelMethod().equals(MULTIPLEMODELMETHOD.MODEL_CHAIN))
         {
@@ -59,7 +60,7 @@ public class SegmentationBuilder {
         else
         {
             // Temporary
-            this.numSegments = this.generator.intValue(4, 10);
+            this.numSegments = this.generator.intValue(4, 50);
             // Temporary
         }
                 

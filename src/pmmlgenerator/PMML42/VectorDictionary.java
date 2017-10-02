@@ -150,6 +150,10 @@ public class VectorDictionary {
      *     
      */
     public BigInteger getNumberOfVectors() {
+        if (numberOfVectors == null)
+        {
+            return BigInteger.valueOf(this.vectorInstance.size());
+        }
         return numberOfVectors;
     }
 

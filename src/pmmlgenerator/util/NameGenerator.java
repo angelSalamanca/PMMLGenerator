@@ -140,6 +140,11 @@ public class NameGenerator {
         return salt.toString();
     }
     
+    public String stringDashValue(int numChars)
+    {
+        return this.stringValue(numChars) + "-"  + stringValue(numChars);
+    }
+    
     public ArrayList<Integer> intValues(int numValues)
     {
         ArrayList<Integer> values = new ArrayList<Integer>();        
@@ -389,7 +394,7 @@ public class NameGenerator {
                     double d = this.doubleValue(-50,50);
                     return String.valueOf(d);
                 default:
-                      throw new Exception("getValue");
+                     throw new Exception("getValue");
             }
         }
         

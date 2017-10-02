@@ -43,7 +43,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "extension"
 })
-@XmlRootElement(name = "Cons")
+@XmlRootElement(name = "Con")
 public class Cons {
 
     @XmlElement(name = "Extension")

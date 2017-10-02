@@ -23,9 +23,8 @@ public class GRMBuilder extends BaseModelBuilder {
     private Object activeField ;
     private MiningField targetField;
     private FieldHelper fieldHelper;
-    private Integer numTargetCategories;
     private List<String> fullList;
-    private List<String> categories;
+    
     private GeneralRegressionModel grm;
     private Integer paramNum;
     

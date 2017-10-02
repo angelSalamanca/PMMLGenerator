@@ -167,5 +167,12 @@ public class Coefficients {
     public void setAbsoluteValue(Double value) {
         this.absoluteValue = value;
     }
+    
+    public void addCoefficient(Double value)
+    {
+        Coefficient c = new Coefficient();
+        c.value = value;
+        this.getCoefficient().add(c);
+    }
 
 }

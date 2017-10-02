@@ -26,6 +26,9 @@ public class ModelContext {
     public TreeModel treeModel;
     public MiningModel miningModel;
     public SupportVectorMachineModel svmModel;
+    public NeuralNetwork nnModel;
+    public Scorecard scorecard;
+    public RuleSetModel ruleset;
     
     private MiningField targetField;
     public List<String> categories;
@@ -68,12 +71,7 @@ public class ModelContext {
     public ModelContext(Context thiscontext, String modelFamily) throws Exception
     {
         this.context = thiscontext; 
-        this.generator = this.context.generator;
-        if (modelFamily == null)
-        {
-            modelFamily = generator.pickOne(General.models);
-            modelFamily = "TreeModel";
-        }// Temporary
+        this.generator = this.context.generator;             
          
         this.name = modelFamily; 
        
@@ -88,6 +86,7 @@ public class ModelContext {
     {        
           this.context = thiscontext;      
           this.theClass = model.getClass().getSimpleName();
+         
          this.generator = this.context.generator;
       
         this.cu = new ContentUtil();
@@ -154,6 +153,12 @@ public class ModelContext {
                 return this.miningModel;
             case "SupportVectorMachineModel":
                 return this.svmModel;    
+            case "NeuralNetwork":
+                return this.nnModel;
+            case "Scorecard":
+                return this.scorecard;
+            case "RuleSetModel":
+                return this.ruleset;
             case "DefineFunction":
                 return this.PMMLModel;
             case "PMML":
@@ -168,7 +173,7 @@ public class ModelContext {
         return PMMLGenerator.pmml;
     }
     
-    private void castModel() throws Exception
+    public  void castModel() throws Exception
     {
         this.theClass = this.PMMLModel.getClass().getSimpleName();
         switch(theClass)
@@ -191,6 +196,18 @@ public class ModelContext {
              
             case "SupportVectorMachineModel":
                 this.svmModel = (SupportVectorMachineModel)PMMLModel;
+                break; 
+                
+            case "NeuralNetwork":
+                this.nnModel = (NeuralNetwork)PMMLModel;
+                break; 
+                
+            case "Scorecard":
+                 this.scorecard = (Scorecard)PMMLModel;
+                break; 
+                
+            case "RuleSet":
+                this.ruleset = (RuleSetModel)PMMLModel;
                 break; 
                 
             default:
@@ -243,7 +260,20 @@ public class ModelContext {
                 lt = (LocalTransformations)cu.getFromContent(svm.getContent(),"LocalTransformations");
                 break;    
                  
+             case "NeuralNetwork":                
+                lt = (LocalTransformations)cu.getFromContent(this.nnModel.getContent(),"LocalTransformations");
+                break;    
             
+             case "Scorecard":                
+                lt = (LocalTransformations)cu.getFromContent(this.scorecard.getContent(),"LocalTransformations");
+                break;    
+                 
+               case "RuleSetModel":                
+                lt = (LocalTransformations)cu.getFromContent(this.ruleset.getContent(),"LocalTransformations");
+                break;      
+            
+                 
+                 
             default:
                return null;
         }
@@ -267,7 +297,10 @@ public class ModelContext {
             case "TreeModel":
             case "MiningModel":    
             case "RegressionModel":    
-            case "SupportVectorMachineModel":                
+            case "SupportVectorMachineModel":  
+            case "NeuralNetwork":
+            case "Scorecard":
+            case "RuleSetModel":    
                 return true;
             default:
                 throw new Exception("Unexpected class");
@@ -310,15 +343,38 @@ public class ModelContext {
                 }
            
              case "SupportVectorMachineModel":
-                return false; //? 
+                
+                    return false;
+         
             
             case "MiningModel":
                 return false;  //TODO in modelChain look at last model characteristics
                 
+              case "NeuralNetwork":
+                 if (this.nnModel.getFunctionName().equals(MININGFUNCTION.CLASSIFICATION))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }    
+                
+              case "Scorecard":
+                  return false;
+                  
             default:
                 throw new Exception("Unexpected class");
         }
     }
+      
+      public Boolean hasReasonCodes() {
+          if (theClass.equals("Scorecard")) {
+              return true;
+          } else {
+              return false;
+          }
+      }
     
       public List<String> getCategories()
       {
@@ -349,7 +405,17 @@ public class ModelContext {
                      
                  case "SupportVectorMachineModel":
                    return this.svmModel.getFunctionName() == MININGFUNCTION.REGRESSION;         
-                   
+               
+                 case "NeuralNetwork":
+                   return this.nnModel.getFunctionName() == MININGFUNCTION.REGRESSION;         
+               
+                     case "Scorecard":
+                   return this.scorecard.getFunctionName() == MININGFUNCTION.REGRESSION;         
+               
+                case "RuleSetModel":
+                   return this.ruleset.getFunctionName() == MININGFUNCTION.REGRESSION;         
+               
+                     
                 default:
                     throw new Exception("Unexpected class");     
                    
@@ -386,6 +452,17 @@ public class ModelContext {
           SVMModelBuilder svmb = new SVMModelBuilder(this);
           svmb.build(isRegression);
       }
+         
+         private void buildNN(Boolean isRegression) throws Exception
+      {
+          NNBuilder nnb = new NNBuilder(this);
+          nnb.build(isRegression);
+      }
+         
+         private void buildScorecard()   throws Exception {
+             ScorecardBuilder scb = new ScorecardBuilder(this);
+             scb.build(true);
+         }
       
       public String getTargetReferenceCategory(ModelContext mContext) throws Exception
       {
@@ -423,12 +500,22 @@ public class ModelContext {
                 this.buildSVMModel(isRegression);
                 break;
                 
+            case "NeuralNetwork":
+                this.buildNN(isRegression);
+                break;
+                
+            case "Scorecard":
+                this.buildScorecard();
+                break;
+                
             default:
-                throw new Exception("Unexpected class");
+               throw new Exception("Unexpected class");
           }
+          
          this.PMMLModel = getModel();
          this.castModel();        
-          this.context.backToParent();
+         this.context.backToParent();
+         
       }
       
       public MiningSchema getMiningSchema() throws Exception
@@ -449,6 +536,15 @@ public class ModelContext {
                 
             case "SupportVectorMachineModel":
                 return (MiningSchema)this.cu.getFromContent(this.svmModel.getContent(), "MiningSchema");    
+                
+             case "NeuralNetwork":
+                return (MiningSchema)this.cu.getFromContent(this.nnModel.getContent(), "MiningSchema");    
+                 
+             case "Scorecard":
+                return (MiningSchema)this.cu.getFromContent(this.scorecard.getContent(), "MiningSchema");    
+                      
+            case "RuleSetModel":
+                return (MiningSchema)this.cu.getFromContent(this.ruleset.getContent(), "MiningSchema");    
                 
             default:
                 throw new Exception("Unexpected class in getMiningSchema");
@@ -540,7 +636,7 @@ public class ModelContext {
           
          catch (Exception e) {   
              {
-                 General.witness(e.getMessage());
+                General.witness(e.getMessage());
                  throw new Exception("FromMF",e);
              } 
        
@@ -578,6 +674,22 @@ public class ModelContext {
     public List<MiningField> readMiningFields() throws Exception
     {
         return getMiningSchema().getMiningField();
+    }
+    
+    public List<String> getTargetMiningFields() throws Exception
+    {
+        List<String> tmf = new ArrayList<String>();
+        List<MiningField> amf = readMiningFields();
+        for (MiningField mf : amf)
+        {
+            if (mf.getUsageType().equals(FIELDUSAGETYPE.TARGET) || mf.getUsageType().equals(FIELDUSAGETYPE.PREDICTED))
+            {
+                tmf.add(mf.getName());
+            }
+        }
+        
+        
+        return tmf;
     }
     
      public LocalTransformations getLocalTransformations()
@@ -618,7 +730,7 @@ public class ModelContext {
                 return "tree";
                  
              case "RegressionModel":
-               return "rm";
+               return "reg";
                               
               case "MiningModel":
                 return "mm";
@@ -627,7 +739,13 @@ public class ModelContext {
                 return "svm";     
                
                case "Scorecard":
-                  return "scorecard";     
+                  return "score";     
+               
+               case "NeuralNetwork":
+                   return "nnet";
+               
+               case "RuleSetModel":
+                   return "rset";                   
                    
              default:
                return "unknown";

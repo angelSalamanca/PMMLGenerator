@@ -20,9 +20,13 @@ import pmmlgenerator.predicates.*;
 public class SegmentBuilder {
     
     private Segment segment;
-            
+    private Context context;
+    
+    
+    
     public Segment build(ModelContext modelContext, Boolean needsWeight) throws Exception
     {
+        this.context = modelContext.context;
         this.segment = new Segment();
         RandomPredicate rp = new RandomPredicate();
         Object predicate = rp.getPredicate(modelContext);
@@ -34,8 +38,10 @@ public class SegmentBuilder {
         {
             segment.setSimplePredicate((SimplePredicate)predicate);       
         }
-            
-        ModelContext segmentContext = new ModelContext(modelContext.context, null);
+        
+        String modelFamily = this.context.generator.pickOne(General.segmentModelTypes);
+        
+        ModelContext segmentContext = new ModelContext(modelContext.context, modelFamily);
         segmentContext.build(modelContext.isRegression());
         // Only 1 is not null
         segment.setGeneralRegressionModel(segmentContext.grm);
